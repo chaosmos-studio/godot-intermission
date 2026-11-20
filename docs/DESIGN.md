@@ -53,6 +53,7 @@ Every SDK fact below was read from the libraries on Maven Central (mediation-sdk
   Resumed, not started, activities count, because Google Play's install overlay is see-through and leaves the ad's activity started.
   On the A142 a Unity Ads test interstitial opened that overlay by itself about 10 seconds in, with no touch (Unity's WebView called `openUrl("https://play.google.com/d?id=...", overlay: true)`), and LevelPlay reported no click.
   Counting started activities missed it, and counting resumed ones catches it.
+  No switch turns this off in code: Unity Ads 4.22.0's `AndroidHandleOpenUrl` starts whatever intent the ad's own script asks for through the WebView bridge, and neither SDK's classes mention `overlay`, `autoOpen`, `storeOverlay` or `inlineInstall`.
   For banners it uses LevelPlay's `onAdLeftApplication`, and a tap in the 5 seconds before counts.
 - `ad_overlong`: a timer starts when the ad shows and fires once if the ad is still up at the limit.
 - An ad that neither shows nor fails within 8 seconds of `show` is given up with `TIMEOUT`, so one stuck ad never blocks the next.
