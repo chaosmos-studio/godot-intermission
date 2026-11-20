@@ -1,0 +1,14 @@
+.gradle/
+build/
+local.properties
+.idea/
+*.iml
+.kotlin/
+
+# Built by `./gradlew addonBinaries`, published with each release.
+demo/addons/intermission/bin/
+
+# Godot
+demo/.godot/
+demo/android/
+demo/build/

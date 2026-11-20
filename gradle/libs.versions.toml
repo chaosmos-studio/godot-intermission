@@ -1,0 +1,32 @@
+[versions]
+intermission = "0.1.0"
+agp = "8.6.1"
+kotlin = "2.1.21"
+godot = "4.7.0.stable"
+junit = "4.13.2"
+# Only compiled against: Godot's activity is a LifecycleOwner, and Godot's own build brings the library.
+lifecycle = "2.6.1"
+# The Unity SDKs a game's build fetches. The addon's export plugin lists the same coordinates, and the demo's tests check that the two agree.
+levelplay = "9.8.0"
+adquality = "9.12.1"
+unityads-adapter = "5.17.0"
+unityads = "4.22.0"
+coherence = "0.3.0"
+ads-identifier = "18.3.0"
+appset = "16.1.0"
+
+[libraries]
+godot = { module = "org.godotengine:godot", version.ref = "godot" }
+junit = { module = "junit:junit", version.ref = "junit" }
+lifecycle-common = { module = "androidx.lifecycle:lifecycle-common", version.ref = "lifecycle" }
+levelplay = { module = "com.unity3d.ads-mediation:mediation-sdk", version.ref = "levelplay" }
+adquality = { module = "com.unity3d.ads-mediation:adquality-sdk", version.ref = "adquality" }
+unityads-adapter = { module = "com.unity3d.ads-mediation:unityads-adapter", version.ref = "unityads-adapter" }
+unityads = { module = "com.unity3d.ads:unity-ads", version.ref = "unityads" }
+coherence = { module = "com.unity3d.coherence:coherencelib", version.ref = "coherence" }
+ads-identifier = { module = "com.google.android.gms:play-services-ads-identifier", version.ref = "ads-identifier" }
+appset = { module = "com.google.android.gms:play-services-appset", version.ref = "appset" }
+
+[plugins]
+android-library = { id = "com.android.library", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
