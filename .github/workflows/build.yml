@@ -1,0 +1,83 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  GODOT_RELEASE: 4.7-stable
+  GODOT_SHA512: b639ca9c1ddea39bb3df89bd5283a51ca6047467abe6b25e9436566f2b2082ede633025073989ecf39c7d5d3c2493d80ea13e3af6dd5e261bbf89e462d6d2214
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Unit tests and the addon
+        run: ./gradlew --no-daemon :plugin:testDebugUnitTest :levelplay:testDebugUnitTest addonZip
+
+      - name: Godot
+        run: |
+          curl -sSfL -o godot.zip "https://github.com/godotengine/godot/releases/download/${GODOT_RELEASE}/Godot_v${GODOT_RELEASE}_linux.x86_64.zip"
+          echo "${GODOT_SHA512}  godot.zip" | sha512sum -c -
+          unzip -q godot.zip
+          mv "Godot_v${GODOT_RELEASE}_linux.x86_64" "$RUNNER_TEMP/godot"
+          rm godot.zip
+
+      - name: Addon tests
+        run: |
+          set -o pipefail
+          "$RUNNER_TEMP/godot" --headless --path demo --import 2>&1 | tee import.log
+          "$RUNNER_TEMP/godot" --headless --path demo -s res://tests/run_tests.gd 2>&1 | tee tests.log
+          if grep -E "SCRIPT ERROR|Parse Error" import.log tests.log; then exit 1; fi
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: intermission
+          path: |
+            build/dist/intermission-*.zip
+            demo/addons/intermission/bin/*/*.aar
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: intermission
+          path: dist
+
+      - name: Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="$(sed -n 's/^version="\(.*\)"$/\1/p' demo/addons/intermission/plugin.cfg)"
+          if [ "v${version}" != "${GITHUB_REF_NAME}" ]; then
+            echo "plugin.cfg says ${version}, the tag is ${GITHUB_REF_NAME}" >&2
+            exit 1
+          fi
+          awk -v heading="## ${version}" '$0 == heading {on = 1; next} /^## / {on = 0} on' CHANGELOG.md > notes.md
+          if [ ! -s notes.md ]; then
+            echo "CHANGELOG.md has no section for ${version}" >&2
+            exit 1
+          fi
+          gh release create "${GITHUB_REF_NAME}" --title "Intermission ${version}" --notes-file notes.md \
+            $(find dist -name "*.zip" -o -name "*.aar")
