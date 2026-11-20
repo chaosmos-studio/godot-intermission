@@ -89,6 +89,8 @@ class AdController(
         overlongMs = if (seconds > 0.0) (seconds * 1000.0).toLong() else 0L
     }
 
+    fun enableTestSuite() = provider.enableTestSuite()
+
     fun openTestSuite(): Boolean = provider.openTestSuite()
 
     fun initialize(appKey: String, testMode: Boolean) {
@@ -225,14 +227,14 @@ class AdController(
         failShow(show.format.wire, show.adUnitId, AdError.TIMEOUT, 0, "The ad neither showed nor failed in time.")
     }
 
-    override fun onShown(format: Format, adUnitId: String) {
+    override fun onShown(format: Format, adUnitId: String, network: String) {
         val show = showing?.takeIf { it.adUnitId == adUnitId }
         if (show != null && show.shownAtMs < 0) {
             show.start?.cancel()
             show.shownAtMs = scheduler.nowMs()
             if (overlongMs > 0) show.overlong = scheduler.after(overlongMs) { reportOverlong(show) }
         }
-        signals.emit(Signals.AD_SHOWN, format.wire, adUnitId)
+        signals.emit(Signals.AD_SHOWN, format.wire, adUnitId, network)
     }
 
     private fun reportOverlong(show: Show) {
@@ -288,8 +290,8 @@ class AdController(
         signals.emit(Signals.AD_CLOSED, show.format.wire, show.adUnitId, show.rewarded)
     }
 
-    /** The whole app went to the background. While a full-screen ad is up, that is an ad leaving the app. */
-    fun onAppBackground() {
+    /** Something outside the app came to the front. While a full-screen ad is up, that is the ad leaving the app. */
+    fun onAppLeft() {
         val show = showing ?: return
         if (show.leftReported) return
         show.leftReported = true

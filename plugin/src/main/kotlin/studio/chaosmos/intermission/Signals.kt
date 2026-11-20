@@ -29,7 +29,7 @@ object Signals {
         INITIALIZED to listOf(BOOL, STRING, INT, STRING),
         AD_LOADED to listOf(STRING, STRING),
         AD_FAILED_TO_LOAD to listOf(STRING, STRING, STRING, INT, STRING),
-        AD_SHOWN to listOf(STRING, STRING),
+        AD_SHOWN to listOf(STRING, STRING, STRING),
         AD_FAILED_TO_SHOW to listOf(STRING, STRING, STRING, INT, STRING),
         AD_CLICKED to listOf(STRING, STRING),
         AD_REWARDED to listOf(STRING, STRING, INT),
@@ -38,7 +38,7 @@ object Signals {
         AD_OVERLONG to listOf(STRING, STRING, DOUBLE),
         BANNER_LOADED to listOf(STRING, INT, INT),
         BANNER_FAILED_TO_LOAD to listOf(STRING, STRING, INT, STRING),
-        BANNER_SHOWN to listOf(STRING),
+        BANNER_SHOWN to listOf(STRING, STRING),
         BANNER_CLICKED to listOf(STRING),
     )
 }

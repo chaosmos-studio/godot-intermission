@@ -35,6 +35,7 @@ class MissingProvider(private val reason: String) : Provider {
 
     override fun setBannerRefreshing(on: Boolean) = Unit
     override fun destroyBanner() = Unit
+    override fun enableTestSuite() = Unit
     override fun openTestSuite() = false
     override fun release() = Unit
 }

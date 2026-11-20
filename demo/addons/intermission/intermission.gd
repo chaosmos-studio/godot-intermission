@@ -45,22 +45,23 @@ const UNKNOWN_FORMAT: int = -1
 signal initialized(ok: bool, error: AdError, provider_code: int, message: String)
 signal ad_loaded(format: Format, ad_unit_id: String)
 signal ad_failed_to_load(format: Format, ad_unit_id: String, error: AdError, provider_code: int, message: String)
-signal ad_shown(format: Format, ad_unit_id: String)
+## [param network] names the ad network that filled the ad, as the SDK reports it.
+signal ad_shown(format: Format, ad_unit_id: String, network: String)
 signal ad_failed_to_show(format: Format, ad_unit_id: String, error: AdError, provider_code: int, message: String)
 signal ad_clicked(format: Format, ad_unit_id: String)
 ## May come just after [signal ad_closed] too, though the plugin waits a moment after a rewarded close for it.
 signal ad_rewarded(ad_unit_id: String, reward_name: String, amount: int)
 ## The full-screen ad is gone. [param rewarded] says whether a rewarded ad earned its reward.
 signal ad_closed(format: Format, ad_unit_id: String, rewarded: bool)
-## The app went to the background while an ad was up. With [param clicked] false, nobody tapped the ad first:
-## the ad sent the player away by itself (to a store page, say), or the player left.
+## Something outside the app (a store page, another app, the home screen) covered a full-screen ad. With
+## [param clicked] false, nobody tapped the ad first: the ad sent the player away by itself, or the player left.
 signal app_left(format: Format, ad_unit_id: String, clicked: bool)
 ## A full-screen ad has been up longer than [method set_overlong_seconds] allows, which a trapped ad does.
 signal ad_overlong(format: Format, ad_unit_id: String, seconds: float)
 ## Again on every refresh.
 signal banner_loaded(ad_unit_id: String, size_dp: Vector2)
 signal banner_failed_to_load(ad_unit_id: String, error: AdError, provider_code: int, message: String)
-signal banner_shown(ad_unit_id: String)
+signal banner_shown(ad_unit_id: String, network: String)
 signal banner_clicked(ad_unit_id: String)
 
 const _FORMATS: PackedStringArray = ["interstitial", "rewarded", "banner"]
@@ -199,8 +200,8 @@ func _on_ad_loaded(format: String, ad_unit_id: String) -> void:
 func _on_ad_failed_to_load(format: String, ad_unit_id: String, error: String, code: int, message: String) -> void:
 	ad_failed_to_load.emit(_format(format), ad_unit_id, _error(error), code, message)
 
-func _on_ad_shown(format: String, ad_unit_id: String) -> void:
-	ad_shown.emit(_format(format), ad_unit_id)
+func _on_ad_shown(format: String, ad_unit_id: String, network: String) -> void:
+	ad_shown.emit(_format(format), ad_unit_id, network)
 
 func _on_ad_failed_to_show(format: String, ad_unit_id: String, error: String, code: int, message: String) -> void:
 	ad_failed_to_show.emit(_format(format), ad_unit_id, _error(error), code, message)
@@ -226,8 +227,8 @@ func _on_banner_loaded(ad_unit_id: String, width_dp: int, height_dp: int) -> voi
 func _on_banner_failed_to_load(ad_unit_id: String, error: String, code: int, message: String) -> void:
 	banner_failed_to_load.emit(ad_unit_id, _error(error), code, message)
 
-func _on_banner_shown(ad_unit_id: String) -> void:
-	banner_shown.emit(ad_unit_id)
+func _on_banner_shown(ad_unit_id: String, network: String) -> void:
+	banner_shown.emit(ad_unit_id, network)
 
 func _on_banner_clicked(ad_unit_id: String) -> void:
 	banner_clicked.emit(ad_unit_id)

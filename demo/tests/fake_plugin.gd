@@ -6,7 +6,7 @@ extends RefCounted
 signal initialized(ok: bool, error: String, code: int, message: String)
 signal ad_loaded(format: String, ad_unit_id: String)
 signal ad_failed_to_load(format: String, ad_unit_id: String, error: String, code: int, message: String)
-signal ad_shown(format: String, ad_unit_id: String)
+signal ad_shown(format: String, ad_unit_id: String, network: String)
 signal ad_failed_to_show(format: String, ad_unit_id: String, error: String, code: int, message: String)
 signal ad_clicked(format: String, ad_unit_id: String)
 signal ad_rewarded(ad_unit_id: String, reward_name: String, amount: int)
@@ -15,7 +15,7 @@ signal app_left(format: String, ad_unit_id: String, clicked: bool)
 signal ad_overlong(format: String, ad_unit_id: String, seconds: float)
 signal banner_loaded(ad_unit_id: String, width_dp: int, height_dp: int)
 signal banner_failed_to_load(ad_unit_id: String, error: String, code: int, message: String)
-signal banner_shown(ad_unit_id: String)
+signal banner_shown(ad_unit_id: String, network: String)
 signal banner_clicked(ad_unit_id: String)
 
 var calls: PackedStringArray = []
@@ -71,6 +71,9 @@ func bannerSizeDp() -> PackedInt32Array:
 
 func setOverlongSeconds(seconds: float) -> void:
 	calls.append("setOverlongSeconds %s" % seconds)
+
+func enableTestSuite() -> void:
+	calls.append("enableTestSuite")
 
 func openTestSuite() -> void:
 	calls.append("openTestSuite")

@@ -46,6 +46,7 @@ func _build() -> void:
 	scroll.add_child(column)
 
 	_status = Label.new()
+	_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(_status)
 	_app_key = _field(column, "App key", DEMO_APP_KEY)
 	_interstitial = _field(column, "Interstitial", DEMO_INTERSTITIAL)
@@ -114,6 +115,7 @@ func _row(parent: Control, buttons: Array) -> void:
 	parent.add_child(row)
 
 func _initialize() -> void:
+	_ads.enable_test_suite()
 	_ads.initialize(_app_key.text, _test_mode.button_pressed)
 	_say("initialize, test mode %s" % _test_mode.button_pressed)
 
@@ -131,8 +133,8 @@ func _listen() -> void:
 	_ads.ad_failed_to_load.connect(func(format: Intermission.Format, unit: String, error: Intermission.AdError, code: int,
 			message: String) -> void:
 		_say("load failed %s %s %s %d %s" % [_format(format), unit, _error(error), code, message]))
-	_ads.ad_shown.connect(func(format: Intermission.Format, unit: String) -> void:
-		_say("shown %s %s" % [_format(format), unit]))
+	_ads.ad_shown.connect(func(format: Intermission.Format, unit: String, network: String) -> void:
+		_say("shown %s %s from %s" % [_format(format), unit, network]))
 	_ads.ad_failed_to_show.connect(func(format: Intermission.Format, unit: String, error: Intermission.AdError, code: int,
 			message: String) -> void:
 		_say("show failed %s %s %s %d %s" % [_format(format), unit, _error(error), code, message]))
@@ -151,7 +153,8 @@ func _listen() -> void:
 		_say("banner loaded %s %dx%d dp" % [unit, int(size_dp.x), int(size_dp.y)]))
 	_ads.banner_failed_to_load.connect(func(unit: String, error: Intermission.AdError, code: int, message: String) -> void:
 		_say("banner failed %s %s %d %s" % [unit, _error(error), code, message]))
-	_ads.banner_shown.connect(func(unit: String) -> void: _say("banner shown %s" % unit))
+	_ads.banner_shown.connect(func(unit: String, network: String) -> void:
+		_say("banner shown %s from %s" % [unit, network]))
 	_ads.banner_clicked.connect(func(unit: String) -> void: _say("banner clicked %s" % unit))
 
 func _notification(what: int) -> void:

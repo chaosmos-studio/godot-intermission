@@ -33,6 +33,7 @@ class LevelPlayProvider : Provider {
     private val rewardeds = HashMap<String, LevelPlayRewardedAd>()
     private var banner: LevelPlayBannerAdView? = null
     private var testMode = false
+    private var testSuite = false
     private var initialized = false
 
     private val events: ProviderEvents
@@ -61,8 +62,7 @@ class LevelPlayProvider : Provider {
         }
         this.testMode = testMode
         if (testMode) {
-            // Read only at init, and needed for launchTestSuite.
-            LevelPlay.setMetaData("is_test_suite", "enable")
+            enableTestSuite()
             LevelPlay.setAdaptersDebug(true)
         }
         val request = LevelPlayInitRequest.Builder(if (testMode) DemoApp.APP_KEY else appKey).build()
@@ -145,9 +145,15 @@ class LevelPlayProvider : Provider {
         view.destroy()
     }
 
+    // LevelPlay reads this metadata only at init.
+    override fun enableTestSuite() {
+        LevelPlay.setMetaData("is_test_suite", "enable")
+        testSuite = true
+    }
+
     override fun openTestSuite(): Boolean {
         val activity = host.activity()
-        if (!testMode || !initialized || activity == null) return false
+        if (!testSuite || !initialized || activity == null) return false
         LevelPlay.launchTestSuite(activity)
         return true
     }
@@ -175,7 +181,7 @@ class LevelPlayProvider : Provider {
             events.onLoadFailed(format, adUnitId, error.mapped(), error.errorCode, error.errorMessage)
         }
 
-        override fun onAdDisplayed(adInfo: LevelPlayAdInfo) = onMain { events.onShown(format, adUnitId) }
+        override fun onAdDisplayed(adInfo: LevelPlayAdInfo) = onMain { events.onShown(format, adUnitId, adInfo.adNetwork) }
 
         override fun onAdDisplayFailed(error: LevelPlayAdError, adInfo: LevelPlayAdInfo) = onMain {
             events.onShowFailed(format, adUnitId, error.mapped(), error.errorCode, error.errorMessage)
@@ -195,7 +201,7 @@ class LevelPlayProvider : Provider {
             events.onLoadFailed(format, adUnitId, error.mapped(), error.errorCode, error.errorMessage)
         }
 
-        override fun onAdDisplayed(adInfo: LevelPlayAdInfo) = onMain { events.onShown(format, adUnitId) }
+        override fun onAdDisplayed(adInfo: LevelPlayAdInfo) = onMain { events.onShown(format, adUnitId, adInfo.adNetwork) }
 
         override fun onAdDisplayFailed(error: LevelPlayAdError, adInfo: LevelPlayAdInfo) = onMain {
             events.onShowFailed(format, adUnitId, error.mapped(), error.errorCode, error.errorMessage)
@@ -222,7 +228,7 @@ class LevelPlayProvider : Provider {
             events.onBannerLoadFailed(adUnitId, error.mapped(), error.errorCode, error.errorMessage)
         }
 
-        override fun onAdDisplayed(adInfo: LevelPlayAdInfo) = onMain { events.onBannerShown(adUnitId) }
+        override fun onAdDisplayed(adInfo: LevelPlayAdInfo) = onMain { events.onBannerShown(adUnitId, adInfo.adNetwork) }
 
         override fun onAdClicked(adInfo: LevelPlayAdInfo) = onMain { events.onBannerClicked(adUnitId) }
 

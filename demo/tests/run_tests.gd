@@ -101,12 +101,14 @@ func _calls_reach_the_plugin_by_wire_name() -> void:
 	ads.hide_banner()
 	ads.destroy_banner()
 	ads.set_overlong_seconds(20.0)
+	ads.enable_test_suite()
 	ads.open_test_suite()
 	var calls: PackedStringArray = fake.get("calls")
 	var expected: PackedStringArray = [
 		"initialize key false", "setGdprConsent false", "setUsPrivacyOptOut true", "setChildDirected false",
 		"loadAd interstitial i1", "loadAd rewarded r1", "showAd r1 hint", "loadBanner b1 adaptive home",
-		"showBanner custom 16.0 200.5", "hideBanner", "destroyBanner", "setOverlongSeconds 20.0", "openTestSuite",
+		"showBanner custom 16.0 200.5", "hideBanner", "destroyBanner", "setOverlongSeconds 20.0", "enableTestSuite",
+		"openTestSuite",
 	]
 	_check("every call reaches the plugin with its wire names (%s)" % ", ".join(calls), calls == expected)
 	fake.set("ready_units", PackedStringArray(["r1"]))
@@ -126,8 +128,8 @@ func _signals_arrive_as_enums() -> void:
 	fake.emit_signal(&"ad_failed_to_load", "interstitial", "i1", "no_fill", 509, "No fill")
 	_check("ad_failed_to_load",
 		_last("ad_failed_to_load") == [Intermission.Format.INTERSTITIAL, "i1", Intermission.AdError.NO_FILL, 509, "No fill"])
-	fake.emit_signal(&"ad_shown", "interstitial", "i1")
-	_check("ad_shown", _last("ad_shown") == [Intermission.Format.INTERSTITIAL, "i1"])
+	fake.emit_signal(&"ad_shown", "interstitial", "i1", "UnityAds")
+	_check("ad_shown", _last("ad_shown") == [Intermission.Format.INTERSTITIAL, "i1", "UnityAds"])
 	fake.emit_signal(&"ad_failed_to_show", "rewarded", "r1", "expired", 0, "gone")
 	_check("ad_failed_to_show",
 		_last("ad_failed_to_show") == [Intermission.Format.REWARDED, "r1", Intermission.AdError.EXPIRED, 0, "gone"])
@@ -146,8 +148,8 @@ func _signals_arrive_as_enums() -> void:
 	fake.emit_signal(&"banner_failed_to_load", "b1", "no_connection", 520, "offline")
 	_check("banner_failed_to_load",
 		_last("banner_failed_to_load") == ["b1", Intermission.AdError.NO_CONNECTION, 520, "offline"])
-	fake.emit_signal(&"banner_shown", "b1")
-	_check("banner_shown", _last("banner_shown") == ["b1"])
+	fake.emit_signal(&"banner_shown", "b1", "ironSource")
+	_check("banner_shown", _last("banner_shown") == ["b1", "ironSource"])
 	fake.emit_signal(&"banner_clicked", "b1")
 	_check("banner_clicked", _last("banner_clicked") == ["b1"])
 	ads.free()

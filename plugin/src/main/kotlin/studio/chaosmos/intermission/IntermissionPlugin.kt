@@ -124,8 +124,11 @@ class IntermissionPlugin(godot: Godot) : GodotPlugin(godot), ProviderHost {
     fun setOverlongSeconds(seconds: Double) = onMain { it.setOverlongSeconds(seconds) }
 
     @UsedByGodot
+    fun enableTestSuite() = onMain { it.enableTestSuite() }
+
+    @UsedByGodot
     fun openTestSuite() = onMain {
-        if (!it.openTestSuite()) Log.w(TAG, "The test suite opens only after initializing in test mode.")
+        if (!it.openTestSuite()) Log.w(TAG, "The test suite opens only once enabled before initialize, and after it.")
     }
 
     private fun onMain(work: (AdController) -> Unit) {

@@ -30,6 +30,9 @@ interface Provider {
     fun setBannerRefreshing(on: Boolean)
     fun destroyBanner()
 
+    /** Before [initialize]: lets [openTestSuite] open the SDK's integration test suite later. */
+    fun enableTestSuite()
+
     /** False when the SDK has no test suite or cannot open it now. */
     fun openTestSuite(): Boolean
 
@@ -45,14 +48,17 @@ interface ProviderHost {
     fun setBannerView(view: View?, widthDp: Int, heightDp: Int)
 }
 
-/** What a provider reports, with its own raw code and message beside the plugin's [AdError]. */
+/**
+ * What a provider reports, with its own raw code and message beside the plugin's [AdError]. `network` names the ad
+ * network that filled the ad, as the SDK reports it.
+ */
 interface ProviderEvents {
     fun onInitialized()
     fun onInitFailed(error: AdError, code: Int, message: String)
 
     fun onLoaded(format: Format, adUnitId: String)
     fun onLoadFailed(format: Format, adUnitId: String, error: AdError, code: Int, message: String)
-    fun onShown(format: Format, adUnitId: String)
+    fun onShown(format: Format, adUnitId: String, network: String)
     fun onShowFailed(format: Format, adUnitId: String, error: AdError, code: Int, message: String)
     fun onClicked(format: Format, adUnitId: String)
     fun onRewarded(adUnitId: String, name: String, amount: Int)
@@ -60,7 +66,7 @@ interface ProviderEvents {
 
     fun onBannerLoaded(adUnitId: String, widthDp: Int, heightDp: Int)
     fun onBannerLoadFailed(adUnitId: String, error: AdError, code: Int, message: String)
-    fun onBannerShown(adUnitId: String)
+    fun onBannerShown(adUnitId: String, network: String)
     fun onBannerClicked(adUnitId: String)
     fun onBannerLeftApp(adUnitId: String)
 }

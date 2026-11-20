@@ -111,6 +111,10 @@ class FakeProvider : Provider {
         calls.add("destroy banner")
     }
 
+    override fun enableTestSuite() {
+        calls.add("test suite")
+    }
+
     override fun openTestSuite() = true
 
     override fun release() {

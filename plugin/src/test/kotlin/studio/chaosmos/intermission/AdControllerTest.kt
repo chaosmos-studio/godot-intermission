@@ -25,7 +25,7 @@ class AdControllerTest {
     private fun showing(format: Format, unit: String) {
         loaded(format, unit)
         ads.show(unit, "")
-        ads.onShown(format, unit)
+        ads.onShown(format, unit, "UnityAds")
     }
 
     @Test
@@ -196,6 +196,22 @@ class AdControllerTest {
         showing(Format.INTERSTITIAL, "i1")
         clock.advance(AdController.SHOW_START_TIMEOUT_MS * 2)
         assertTrue(sink.named(Signals.AD_FAILED_TO_SHOW).isEmpty())
+    }
+
+    @Test
+    fun aShownAdNamesItsNetwork() {
+        ready()
+        showing(Format.REWARDED, "r1")
+        ads.loadBanner("b1", "banner", "")
+        ads.onBannerShown("b1", "ironSource")
+        assertEquals(listOf("rewarded", "r1", "UnityAds"), sink.named(Signals.AD_SHOWN).single())
+        assertEquals(listOf("b1", "ironSource"), sink.named(Signals.BANNER_SHOWN).single())
+    }
+
+    @Test
+    fun theTestSuiteIsTheProvidersToEnable() {
+        ads.enableTestSuite()
+        assertEquals(listOf("test suite"), provider.calls)
     }
 
     @Test
