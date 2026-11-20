@@ -358,8 +358,8 @@ class AdController(
         failBanner(adUnitId, error, code, message)
     }
 
-    override fun onBannerShown(adUnitId: String) {
-        signals.emit(Signals.BANNER_SHOWN, adUnitId)
+    override fun onBannerShown(adUnitId: String, network: String) {
+        signals.emit(Signals.BANNER_SHOWN, adUnitId, network)
     }
 
     override fun onBannerClicked(adUnitId: String) {

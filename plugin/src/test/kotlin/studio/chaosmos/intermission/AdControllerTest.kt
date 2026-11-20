@@ -260,8 +260,8 @@ class AdControllerTest {
     fun leavingTheAppDuringAnAdWithoutATapIsReportedOnce() {
         ready()
         showing(Format.INTERSTITIAL, "i1")
-        ads.onAppBackground()
-        ads.onAppBackground()
+        ads.onAppLeft()
+        ads.onAppLeft()
         assertEquals(listOf(listOf("interstitial", "i1", false)), sink.named(Signals.APP_LEFT))
     }
 
@@ -270,7 +270,7 @@ class AdControllerTest {
         ready()
         showing(Format.REWARDED, "r1")
         ads.onClicked(Format.REWARDED, "r1")
-        ads.onAppBackground()
+        ads.onAppLeft()
         assertEquals(listOf(listOf("rewarded", "r1", true)), sink.named(Signals.APP_LEFT))
     }
 
@@ -279,7 +279,7 @@ class AdControllerTest {
         ready()
         showing(Format.INTERSTITIAL, "i1")
         ads.onClosed(Format.INTERSTITIAL, "i1")
-        ads.onAppBackground()
+        ads.onAppLeft()
         assertTrue(sink.named(Signals.APP_LEFT).isEmpty())
     }
 

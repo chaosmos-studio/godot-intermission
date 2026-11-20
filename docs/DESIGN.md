@@ -48,9 +48,11 @@ Every SDK fact below was read from the libraries on Maven Central (mediation-sdk
 
 ## Signals for bad ads
 
-- `app_left`: the plugin tracks every started activity of the app, the ads' own full-screen activities included.
-  A full-screen ad stops the game's activity as it covers it, so only the last one stopping means the app went to the background.
-  If that happens while a full-screen ad is up, the plugin reports it once for that ad, with whether a tap came first.
+- `app_left`: the plugin tracks every resumed activity of the app, the ads' own full-screen activities included.
+  When none has been in front for half a second while a full-screen ad is up, something outside the app covered the ad, and the plugin reports it once for that ad, with whether a tap came first.
+  Resumed, not started, activities count, because Google Play's install overlay is see-through and leaves the ad's activity started.
+  On the A142 a Unity Ads test interstitial opened that overlay by itself about 10 seconds in, with no touch (Unity's WebView called `openUrl("https://play.google.com/d?id=...", overlay: true)`), and LevelPlay reported no click.
+  Counting started activities missed it, and counting resumed ones catches it.
   For banners it uses LevelPlay's `onAdLeftApplication`, and a tap in the 5 seconds before counts.
 - `ad_overlong`: a timer starts when the ad shows and fires once if the ad is still up at the limit.
 - An ad that neither shows nor fails within 8 seconds of `show` is given up with `TIMEOUT`, so one stuck ad never blocks the next.
@@ -67,18 +69,20 @@ The real SDK changed these:
 - `load_ad`, `show_ad` and `is_ad_ready` avoid GDScript's own `load`.
 - `AdError` avoids shadowing Godot's global `Error`.
 - The singleton is `IntermissionAndroid`, apart from the GDScript class `Intermission`.
-- `app_left` counts the app's activities rather than watching the game's own pause, as explained above.
-- `open_test_suite` works only after initializing in test mode, since LevelPlay reads its metadata at init.
+- `app_left` counts the app's resumed activities rather than watching the game's own pause, as explained above.
+- `ad_shown` and `banner_shown` name the network that filled the ad, so a bad ad can be traced.
+- `open_test_suite` needs `enable_test_suite` before `initialize` (test mode does it by itself), since LevelPlay reads its metadata at init.
 
 ## Device checklist
 
 Run on a phone in test mode only, never tapping a live ad:
 
 1. Initialize: `initialized(true)` online, and a clear failure offline.
-2. Interstitial: loads, shows, closes with its close button and with Back, `ad_closed` once, and the game resumes where it was.
+2. Interstitial: loads, shows, closes with its close button, `ad_closed` once, and the game resumes where it was.
+   Unity's ad player ignores Back, during the video and on the end card.
 3. Rewarded: watched to the end, `ad_rewarded` then `ad_closed(rewarded = true)`, once each.
 4. Banner: loads, shows at the top, the bottom and a custom spot, hides, comes back, and touches beside it reach the game.
-5. No ad opens the store without a tap (`app_left` stays silent).
+5. An ad that opens the store without a tap raises `app_left(clicked = false)`, and a normal show and close raises nothing.
 6. Home during an ad, then back: the game resumes and the ad state is right.
 7. Rotation keeps the banner and the log.
 8. Logcat shows no errors from `studio.chaosmos.intermission` and no "Invalid type" or "not registered" warnings from `GodotPlugin`.

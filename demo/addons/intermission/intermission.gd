@@ -170,7 +170,13 @@ func set_overlong_seconds(seconds: float) -> void:
 	if _plugin != null:
 		_plugin.call(&"setOverlongSeconds", seconds)
 
-## LevelPlay's integration test suite. It opens only after initializing in test mode.
+## Call before [method initialize] to be able to open LevelPlay's integration test suite. Test mode does this
+## by itself.
+func enable_test_suite() -> void:
+	if _plugin != null:
+		_plugin.call(&"enableTestSuite")
+
+## LevelPlay's integration test suite, once enabled and initialized.
 func open_test_suite() -> void:
 	if _plugin != null:
 		_plugin.call(&"openTestSuite")

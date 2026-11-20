@@ -52,10 +52,11 @@ class IntermissionPlugin(godot: Godot) : GodotPlugin(godot), ProviderHost {
         val provider = createProvider(activity)
         this.provider = provider
         val sink = SignalSink { name, args -> emitSignal(name, *args) }
-        val controller = AdController(provider, sink, MainScheduler(main), layer)
+        val scheduler = MainScheduler(main)
+        val controller = AdController(provider, sink, scheduler, layer)
         this.controller = controller
         provider.attach(this)
-        watchForeground(activity, controller)
+        watchForeground(activity, controller, scheduler)
         return layer
     }
 
@@ -167,18 +168,18 @@ class IntermissionPlugin(godot: Godot) : GodotPlugin(godot), ProviderHost {
         }
     }
 
-    private fun watchForeground(activity: Activity, controller: AdController) {
-        val counter = ForegroundCounter { controller.onAppBackground() }
-        // Godot may create this plugin while its activity is already starting, after that start was announced.
-        if ((activity as? LifecycleOwner)?.lifecycle?.currentState?.isAtLeast(Lifecycle.State.STARTED) == true) {
-            counter.activityStarted(activity)
+    private fun watchForeground(activity: Activity, controller: AdController, scheduler: Scheduler) {
+        val watch = ForegroundWatch(scheduler, ForegroundWatch.GRACE_MS) { controller.onAppLeft() }
+        // Godot may create this plugin after its activity resumed, once that was already announced.
+        if ((activity as? LifecycleOwner)?.lifecycle?.currentState?.isAtLeast(Lifecycle.State.RESUMED) == true) {
+            watch.activityResumed(activity)
         }
         val callbacks = object : Application.ActivityLifecycleCallbacks {
-            override fun onActivityStarted(activity: Activity) = counter.activityStarted(activity)
-            override fun onActivityStopped(activity: Activity) = counter.activityStopped(activity)
+            override fun onActivityResumed(activity: Activity) = watch.activityResumed(activity)
+            override fun onActivityPaused(activity: Activity) = watch.activityPaused(activity)
             override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) = Unit
-            override fun onActivityResumed(activity: Activity) = Unit
-            override fun onActivityPaused(activity: Activity) = Unit
+            override fun onActivityStarted(activity: Activity) = Unit
+            override fun onActivityStopped(activity: Activity) = Unit
             override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) = Unit
             override fun onActivityDestroyed(activity: Activity) = Unit
         }

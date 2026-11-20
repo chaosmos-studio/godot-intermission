@@ -51,7 +51,8 @@ Never tap a live ad on your own phone.
 
 ## Bad ads
 
-- `app_left(format, ad_unit_id, clicked)` fires when the app goes to the background while an ad is up. With `clicked` false, the ad sent the player away by itself, or the player left.
+- `app_left(format, ad_unit_id, clicked)` fires when something outside the app (a store page, another app, the home screen) covers a full-screen ad. With `clicked` false, the ad sent the player away by itself, or the player left.
+- `ad_shown` and `banner_shown` name the network that filled the ad.
 - `ad_overlong(format, ad_unit_id, seconds)` fires when a full-screen ad stays up longer than `set_overlong_seconds` (60 by default).
 
 ## Build
