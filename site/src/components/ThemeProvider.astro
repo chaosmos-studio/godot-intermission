@@ -1,0 +1,7 @@
+<script is:inline>
+  // Light unless the reader picked dark, as on chaosmos.studio.
+  (() => {
+    const stored = typeof localStorage !== "undefined" && localStorage.getItem("starlight-theme");
+    document.documentElement.dataset.theme = stored === "dark" ? "dark" : "light";
+  })();
+</script>

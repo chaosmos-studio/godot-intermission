@@ -1,0 +1,44 @@
+---
+title: Intermission
+description: Unity LevelPlay and Unity Ads for Godot 4.7 games on Android, through one node and its typed signals.
+template: splash
+hero:
+  tagline: Unity LevelPlay and Unity Ads for Godot 4.7 games on Android, through one node and its typed signals.
+  actions:
+    - text: Install
+      link: /intermission/install/
+      icon: right-arrow
+    - text: GitHub
+      link: https://github.com/chaosmos-studio/godot-intermission
+      icon: github
+      variant: minimal
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+<CardGrid>
+  <Card title="Three formats" icon="seti:video">
+    Interstitial, rewarded and banner ads from Unity LevelPlay, with Unity Ads as the network.
+  </Card>
+  <Card title="One code path" icon="approve-check">
+    Every call returns at once and every answer is a signal. Off Android every request fails cleanly, so the same code runs in the editor.
+  </Card>
+  <Card title="Safe testing" icon="warning">
+    Test mode serves LevelPlay's public demo app, so your own ad account never sees your test phones.
+  </Card>
+  <Card title="Ads that misbehave" icon="information">
+    Signals for ads that send players to the store by themselves or never end.
+  </Card>
+</CardGrid>
+
+```gdscript
+var ads := Intermission.new()
+
+func _ready() -> void:
+	add_child(ads)
+	ads.ad_closed.connect(_on_ad_closed)
+	ads.initialize("YOUR_APP_KEY", OS.is_debug_build())
+	ads.load_ad(Intermission.Format.REWARDED, "YOUR_REWARDED_AD_UNIT_ID")
+```
+
+Start with [Install](/intermission/install/), then the [Quick start](/intermission/quick-start/).

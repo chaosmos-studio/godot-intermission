@@ -1,0 +1,51 @@
+name: Docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - "CHANGELOG.md"
+      - "docs/DESIGN.md"
+      - ".github/workflows/docs.yml"
+  pull_request:
+    paths:
+      - "site/**"
+      - "CHANGELOG.md"
+      - "docs/DESIGN.md"
+      - ".github/workflows/docs.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  docs:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      - run: npm ci
+        working-directory: site
+
+      - run: npm run build
+        working-directory: site
+
+      - name: Publish to chaosmos.studio/intermission/
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: chaosmos-studio/.github/actions/deploy-web@a204d0b945063da0d885c1caecd410a5783dcf7b # main
+        with:
+          worker: intermission-docs
+          paths: intermission=site/dist
+          cloudflare-api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
