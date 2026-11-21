@@ -65,19 +65,28 @@ jobs:
           name: intermission
           path: dist
 
+      # v1.2.3 is a release of 1.2.3, and v1.2.3-rc.1 a pre-release of it. Both need 1.2.3's CHANGELOG section.
       - name: Release
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
         run: |
+          set -euo pipefail
           version="$(sed -n 's/^version="\(.*\)"$/\1/p' demo/addons/intermission/plugin.cfg)"
-          if [ "v${version}" != "${GITHUB_REF_NAME}" ]; then
-            echo "plugin.cfg says ${version}, the tag is ${GITHUB_REF_NAME}" >&2
-            exit 1
-          fi
-          awk -v heading="## ${version}" '$0 == heading {on = 1; next} /^## / {on = 0} on' CHANGELOG.md > notes.md
+          case "$TAG" in
+            "v$version") prerelease="" ;;
+            "v$version"-*) prerelease="--prerelease" ;;
+            *) echo "plugin.cfg says $version, the tag is $TAG" >&2; exit 1 ;;
+          esac
+          awk -v heading="## $version" '$0 == heading {on = 1; next} /^## / {on = 0} on' CHANGELOG.md > notes.md
           if [ ! -s notes.md ]; then
-            echo "CHANGELOG.md has no section for ${version}" >&2
+            echo "CHANGELOG.md has no section for $version" >&2
             exit 1
           fi
-          gh release create "${GITHUB_REF_NAME}" --title "Intermission ${version}" --notes-file notes.md \
-            $(find dist -name "*.zip" -o -name "*.aar")
+          printf '\nInstall, update and check the download: https://chaosmos.studio/intermission/install/\n' >> notes.md
+          zip="intermission-${TAG#v}.zip"
+          mkdir out
+          cp "$(find dist -name "intermission-$version.zip")" "out/$zip"
+          (cd out && sha256sum "$zip" > SHA256SUMS.txt && cat SHA256SUMS.txt)
+          gh release create "$TAG" --verify-tag --title "Intermission ${TAG#v}" --notes-file notes.md $prerelease \
+            "out/$zip" out/SHA256SUMS.txt
