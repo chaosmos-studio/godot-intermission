@@ -32,8 +32,10 @@ Every SDK fact below was read from the libraries on Maven Central (mediation-sdk
 - **No test mode in code:** the adapter builds Unity's `InitializationConfiguration` with `withTestMode(false)`, always.
   So the plugin's test mode asks LevelPlay's public demo app (`DemoApp.kt`, from Unity's own demo) for every ad.
   A game's own account then never sees a test device, which is what Unity's fraud checks watch.
-- **Test devices are not enough:** on 21 Nov 2026 a phone registered as a test device in both dashboards got two live third-party campaigns through LevelPlay bidding with a game's own app key, the second after Unity's "Force test mode ON for all devices" override was saved.
-  So the plugin's test mode is the only safe way to show ads on your own phones, and a game's own ad units are checked with loads only.
+- **Registering a test device is not enough:** LevelPlay sends a network's test ads to a device only when the device is added under Test devices and that network, with its ad units, is chosen for it with "Test ads", and "by default, the ad network configuration resets within the hour" ([Unity's integration testing guide](https://docs.unity.com/en-us/grow/levelplay/sdk/android/integration-testing)).
+  The Integration Test Suite has a Live / Test toggle for bidding networks ([Unity's test suite guide](https://docs.unity.com/en-us/grow/levelplay/sdk/android/integration-test-suite)).
+  On 21 Nov 2026 a phone registered as a test device, without Unity Ads chosen for it with "Test ads", got two live third-party campaigns through LevelPlay bidding with a game's own app key, the second after Unity's "Force test mode ON for all devices" override was saved. The missing "Test ads" choice is the most likely reason.
+  So the safe rule stands: never show a game's own ads on your own phone. The plugin's test mode is for showing ads, and a game's own ad units are checked with loads only.
 - **Test suite:** LevelPlay reads the `is_test_suite` metadata at init, so the plugin sets it before `init` in debug builds and in test mode, and `launchTestSuite` opens the suite after.
 - **Bidding only:** the adapter loads Unity Ads with `LoadConfiguration.Builder(placement).withAdMarkup(...)`, the bid from LevelPlay's auction.
   Unity's bidding placements cannot be loaded without that markup, and new waterfall placements can no longer be created, which is why the plugin goes through LevelPlay and not the Unity Ads SDK alone.
