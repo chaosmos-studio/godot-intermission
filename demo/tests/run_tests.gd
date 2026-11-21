@@ -23,6 +23,7 @@ func _run() -> void:
 	_unknown_names_stay_visible()
 	_wrapper_matches_the_kotlin_side()
 	_export_plugin_matches_the_version_catalog()
+	_docs_match_the_api()
 	print("%d passed, %d failed" % [_passed, _failed])
 	quit(1 if _failed > 0 else 0)
 
@@ -224,11 +225,53 @@ func _export_plugin_matches_the_version_catalog() -> void:
 			strict.append(coordinate.get_slice(":", 1))
 	_check("the two libraries Unity asks for by a range are held strictly",
 		strict == PackedStringArray(["adquality-sdk", "coherencelib"]))
-	var cfg: ConfigFile = ConfigFile.new()
-	cfg.load("res://addons/intermission/plugin.cfg")
-	_check("plugin.cfg carries the catalog's version", cfg.get_value("plugin", "version", "") == versions["intermission"])
+	_check("plugin.cfg carries the catalog's version", _plugin_version() == versions["intermission"])
 	_check("the library for a debug build", ExportPlugin.library(true) == "intermission/bin/debug/intermission-debug.aar")
 	_check("and for a release build", ExportPlugin.library(false) == "intermission/bin/release/intermission-release.aar")
+
+func _docs_match_the_api() -> void:
+	var docs: String = _repo_file("site/src/content/docs/")
+	var wrapper: String = _read(WRAPPER)
+	var methods_page: String = _read(docs + "reference/methods.md")
+	var signals_page: String = _read(docs + "reference/signals.md")
+	_check("the reference pages are where the tests expect", methods_page != "" and signals_page != "")
+
+	var signatures: Dictionary[String, String] = _matches(wrapper, "\\n(func ([a-z]\\w*)\\(.*\\) -> \\w+):")
+	var documented: Dictionary[String, String] = _matches(methods_page, "\\n```gdscript\\n(func [^\\n]+)\\n```")
+	for signature: String in signatures:
+		_check("the methods page shows %s" % signature, documented.has(signature))
+	_check("and no method the class lacks", documented.size() == signatures.size())
+
+	var declared: Dictionary[String, String] = _matches(wrapper, "\\n(signal \\w+\\([^\\n]*\\))")
+	var listed: Dictionary[String, String] = _matches(signals_page, "\\n```gdscript\\n(signal [^\\n]+)\\n```")
+	for line: String in declared:
+		_check("the signals page shows %s" % line, listed.has(line))
+	_check("and no signal the class lacks", listed.size() == declared.size())
+
+	var enums_page: String = _read(docs + "reference/enums.md")
+	for error: String in Intermission.AdError.keys():
+		_check("the enums page explains %s" % error, enums_page.contains("| `%s` |" % error))
+
+	var version: String = _plugin_version()
+	var install_lines: PackedStringArray = _read(docs + "install.md").split("\n")
+	var pins: String = ""
+	for line: String in _read(docs + "updating.md").split("\n"):
+		if line.begins_with("| %s |" % version):
+			pins = line
+	_check("the updating page has a row for %s" % version, pins != "")
+	for coordinate: String in ExportPlugin.DEPENDENCIES:
+		var parts: PackedStringArray = coordinate.trim_suffix("!!").split(":")
+		var row: String = ""
+		for line: String in install_lines:
+			if line.begins_with("| `%s:%s`" % [parts[0], parts[1]]):
+				row = line
+		_check("the install page pins %s at %s" % [parts[1], parts[2]], row.ends_with("| %s |" % parts[2]))
+		_check("the updating page's row has %s" % parts[2], pins.contains("| %s |" % parts[2]))
+
+func _plugin_version() -> String:
+	var cfg: ConfigFile = ConfigFile.new()
+	cfg.load("res://addons/intermission/plugin.cfg")
+	return cfg.get_value("plugin", "version", "")
 
 func _repo_file(path: String) -> String:
 	return ProjectSettings.globalize_path("res://").path_join("..").path_join(path)
