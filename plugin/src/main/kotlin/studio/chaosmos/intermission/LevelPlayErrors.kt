@@ -1,13 +1,11 @@
-package studio.chaosmos.intermission.levelplay
-
-import studio.chaosmos.intermission.AdError
+package studio.chaosmos.intermission
 
 /**
  * LevelPlay's error codes, as named by the constants in mediation-sdk 9.8.0 (`LevelPlayAdError` and
  * `com.ironsource.mediationsdk.logger.IronSourceError`). Any other code stays [AdError.PROVIDER], with the raw
  * code beside it.
  */
-object LevelPlayErrors {
+internal object LevelPlayErrors {
     private val table: Map<Int, AdError> = buildMap {
         // ERROR_CODE_INIT_FAILED
         put(508, AdError.INIT_FAILED)

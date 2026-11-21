@@ -26,7 +26,7 @@ jobs:
           java-version: "17"
 
       - name: Unit tests and the addon
-        run: ./gradlew --no-daemon :plugin:testDebugUnitTest :levelplay:testDebugUnitTest addonZip
+        run: ./gradlew --no-daemon :plugin:testDebugUnitTest addonZip
 
       - name: Godot
         run: |

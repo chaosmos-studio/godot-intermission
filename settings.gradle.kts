@@ -15,4 +15,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "godot-intermission"
-include(":plugin", ":levelplay")
+include(":plugin")

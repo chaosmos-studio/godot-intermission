@@ -10,7 +10,7 @@ package studio.chaosmos.intermission
  *
  * Activities are kept by identity, so one marked as resumed when the plugin arrives late is never counted twice.
  */
-class ForegroundWatch(
+internal class ForegroundWatch(
     private val scheduler: Scheduler,
     private val graceMs: Long,
     private val onLeft: () -> Unit,

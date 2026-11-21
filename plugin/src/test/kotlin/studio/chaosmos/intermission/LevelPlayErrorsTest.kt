@@ -1,10 +1,8 @@
-package studio.chaosmos.intermission.levelplay
+package studio.chaosmos.intermission
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Test
-import studio.chaosmos.intermission.AdError
-import studio.chaosmos.intermission.Format
 
 class LevelPlayErrorsTest {
     @Test

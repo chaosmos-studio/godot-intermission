@@ -31,8 +31,10 @@ kotlin {
 }
 
 dependencies {
-    // The game's own build supplies Godot, so nothing of it is bundled here.
+    // The game's own build supplies Godot and LevelPlay (the addon's export plugin adds LevelPlay), so neither is
+    // bundled here.
     compileOnly(libs.godot)
     compileOnly(libs.lifecycle.common)
+    compileOnly(libs.levelplay)
     testImplementation(libs.junit)
 }

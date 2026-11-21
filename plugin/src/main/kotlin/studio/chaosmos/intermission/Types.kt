@@ -1,7 +1,7 @@
 package studio.chaosmos.intermission
 
 /** Each value crosses to GDScript as its [wire] name, so reordering never changes what a game sees. */
-enum class Format(val wire: String) {
+internal enum class Format(val wire: String) {
     INTERSTITIAL("interstitial"),
     REWARDED("rewarded"),
     BANNER("banner");
@@ -14,7 +14,7 @@ enum class Format(val wire: String) {
     }
 }
 
-enum class AdError(val wire: String) {
+internal enum class AdError(val wire: String) {
     NONE("none"),
     NOT_INITIALIZED("not_initialized"),
     INIT_FAILED("init_failed"),
@@ -32,24 +32,21 @@ enum class AdError(val wire: String) {
     PROVIDER("provider"),
 }
 
-enum class BannerSize(val wire: String, val widthDp: Int, val heightDp: Int) {
-    BANNER("banner", 320, 50),
-    LARGE("large", 320, 90),
-    MEDIUM_RECTANGLE("medium_rectangle", 300, 250),
-    LEADERBOARD("leaderboard", 728, 90),
-
-    /** As wide as the screen, with a height the SDK picks. 0 means "decided by the SDK". */
-    ADAPTIVE("adaptive", 0, 0);
+internal enum class BannerSize(val wire: String) {
+    BANNER("banner"),
+    LARGE("large"),
+    MEDIUM_RECTANGLE("medium_rectangle"),
+    LEADERBOARD("leaderboard"),
+    ADAPTIVE("adaptive");
 
     companion object {
         fun fromWire(wire: String): BannerSize? = entries.firstOrNull { it.wire == wire }
     }
 }
 
-enum class Anchor(val wire: String) {
+internal enum class Anchor(val wire: String) {
     TOP("top"),
-    BOTTOM("bottom"),
-    CUSTOM("custom");
+    BOTTOM("bottom");
 
     companion object {
         fun fromWire(wire: String): Anchor? = entries.firstOrNull { it.wire == wire }

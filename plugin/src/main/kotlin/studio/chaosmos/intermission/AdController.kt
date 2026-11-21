@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap
  * It runs on one thread, the Android main thread in a game. Godot's thread reads only [isReady] and the
  * volatile fields.
  */
-class AdController(
+internal class AdController(
     private val provider: Provider,
     private val signals: SignalSink,
     private val scheduler: Scheduler,
@@ -18,8 +18,6 @@ class AdController(
 ) : ProviderEvents {
 
     companion object {
-        const val DEFAULT_OVERLONG_MS = 60_000L
-
         /** A reward can be reported after the close, so a rewarded close waits this long for it. */
         const val REWARD_GRACE_MS = 1_000L
 
@@ -59,11 +57,9 @@ class AdController(
         private set
     @Volatile var testMode = false
         private set
-    @Volatile var bannerWidthDp = 0
-        private set
-    @Volatile var bannerHeightDp = 0
-        private set
-    var overlongMs = DEFAULT_OVERLONG_MS
+
+    /** 0 keeps the overlong check off. */
+    var overlongMs = 0L
         private set
 
     private val ready: MutableSet<String> = ConcurrentHashMap.newKeySet()
@@ -88,8 +84,6 @@ class AdController(
     fun setOverlongSeconds(seconds: Double) {
         overlongMs = if (seconds > 0.0) (seconds * 1000.0).toLong() else 0L
     }
-
-    fun enableTestSuite() = provider.enableTestSuite()
 
     fun openTestSuite(): Boolean = provider.openTestSuite()
 
@@ -258,11 +252,10 @@ class AdController(
         signals.emit(Signals.AD_CLICKED, format.wire, adUnitId)
     }
 
-    override fun onRewarded(adUnitId: String, name: String, amount: Int) {
-        val show = listOfNotNull(showing, closing).firstOrNull { it.adUnitId == adUnitId }
-        show?.rewarded = true
-        signals.emit(Signals.AD_REWARDED, adUnitId, name, amount)
-        if (show != null && show === closing) {
+    override fun onRewarded(adUnitId: String) {
+        val show = listOfNotNull(showing, closing).firstOrNull { it.adUnitId == adUnitId } ?: return
+        show.rewarded = true
+        if (show === closing) {
             show.grace?.cancel()
             reportClosed(show)
         }
@@ -317,16 +310,14 @@ class AdController(
         }
         if (bannerUnit != null) provider.destroyBanner()
         bannerUnit = adUnitId
-        bannerWidthDp = 0
-        bannerHeightDp = 0
         provider.loadBanner(adUnitId, size, placement)
         provider.setBannerRefreshing(bannerWanted)
     }
 
-    fun showBanner(anchorWire: String, xDp: Double, yDp: Double) {
+    fun showBanner(anchorWire: String, marginDp: Double) {
         val anchor = Anchor.fromWire(anchorWire) ?: return
         bannerWanted = true
-        banner.place(anchor, xDp, yDp)
+        banner.place(anchor, marginDp)
         banner.setVisible(true)
         if (bannerUnit != null) provider.setBannerRefreshing(true)
     }
@@ -341,15 +332,11 @@ class AdController(
         pendingBanner = null
         if (bannerUnit != null) provider.destroyBanner()
         bannerUnit = null
-        bannerWidthDp = 0
-        bannerHeightDp = 0
     }
 
     /** Again on every refresh, since the SDK reloads a banner by itself. */
     override fun onBannerLoaded(adUnitId: String, widthDp: Int, heightDp: Int) {
         if (adUnitId != bannerUnit) return
-        bannerWidthDp = widthDp
-        bannerHeightDp = heightDp
         signals.emit(Signals.BANNER_LOADED, adUnitId, widthDp, heightDp)
     }
 
@@ -358,13 +345,8 @@ class AdController(
         failBanner(adUnitId, error, code, message)
     }
 
-    override fun onBannerShown(adUnitId: String, network: String) {
-        signals.emit(Signals.BANNER_SHOWN, adUnitId, network)
-    }
-
     override fun onBannerClicked(adUnitId: String) {
         bannerClickedAtMs = scheduler.nowMs()
-        signals.emit(Signals.BANNER_CLICKED, adUnitId)
     }
 
     override fun onBannerLeftApp(adUnitId: String) {

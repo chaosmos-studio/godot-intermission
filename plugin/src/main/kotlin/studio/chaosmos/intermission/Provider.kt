@@ -4,13 +4,10 @@ import android.app.Activity
 import android.view.View
 
 /**
- * One ad SDK behind the plugin. A provider library names its implementation in its manifest under
- * `studio.chaosmos.intermission.provider`, and it needs a public constructor with no arguments.
- *
+ * The ad SDK behind the plugin, LevelPlay today, kept behind this seam so the controller is tested against a fake.
  * Every call arrives on the Android main thread, and every event must be reported on it.
  */
-interface Provider {
-    val name: String
+internal interface Provider {
     val sdkVersion: String
 
     fun attach(host: ProviderHost)
@@ -30,16 +27,13 @@ interface Provider {
     fun setBannerRefreshing(on: Boolean)
     fun destroyBanner()
 
-    /** Before [initialize]: lets [openTestSuite] open the SDK's integration test suite later. */
-    fun enableTestSuite()
-
-    /** False when the SDK has no test suite or cannot open it now. */
+    /** False when the SDK cannot open its test suite now. */
     fun openTestSuite(): Boolean
 
     fun release()
 }
 
-interface ProviderHost {
+internal interface ProviderHost {
     val events: ProviderEvents
 
     fun activity(): Activity?
@@ -52,7 +46,7 @@ interface ProviderHost {
  * What a provider reports, with its own raw code and message beside the plugin's [AdError]. `network` names the ad
  * network that filled the ad, as the SDK reports it.
  */
-interface ProviderEvents {
+internal interface ProviderEvents {
     fun onInitialized()
     fun onInitFailed(error: AdError, code: Int, message: String)
 
@@ -61,12 +55,11 @@ interface ProviderEvents {
     fun onShown(format: Format, adUnitId: String, network: String)
     fun onShowFailed(format: Format, adUnitId: String, error: AdError, code: Int, message: String)
     fun onClicked(format: Format, adUnitId: String)
-    fun onRewarded(adUnitId: String, name: String, amount: Int)
+    fun onRewarded(adUnitId: String)
     fun onClosed(format: Format, adUnitId: String)
 
     fun onBannerLoaded(adUnitId: String, widthDp: Int, heightDp: Int)
     fun onBannerLoadFailed(adUnitId: String, error: AdError, code: Int, message: String)
-    fun onBannerShown(adUnitId: String, network: String)
     fun onBannerClicked(adUnitId: String)
     fun onBannerLeftApp(adUnitId: String)
 }

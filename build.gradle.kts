@@ -6,20 +6,16 @@ plugins {
 val version: String = libs.versions.intermission.get()
 val addonDir = layout.projectDirectory.dir("demo/addons/intermission")
 
-// Godot reads the libraries from the addon, so a build copies them there under stable names.
+// Godot reads the library from the addon, so a build copies it there under a stable name.
 val addonBinaries by tasks.registering(Copy::class) {
     group = "intermission"
-    description = "Builds both libraries and copies them into the addon."
-    dependsOn(":plugin:assemble", ":levelplay:assemble")
+    description = "Builds the library and copies it into the addon."
+    dependsOn(":plugin:assemble")
     into(addonDir.dir("bin"))
     for (variant in listOf("debug", "release")) {
         from(project(":plugin").layout.buildDirectory.file("outputs/aar/plugin-$variant.aar")) {
             into(variant)
             rename { "intermission-$variant.aar" }
-        }
-        from(project(":levelplay").layout.buildDirectory.file("outputs/aar/levelplay-$variant.aar")) {
-            into(variant)
-            rename { "intermission-levelplay-$variant.aar" }
         }
     }
 }

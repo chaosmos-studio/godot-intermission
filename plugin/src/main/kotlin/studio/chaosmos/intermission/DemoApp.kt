@@ -1,6 +1,4 @@
-package studio.chaosmos.intermission.levelplay
-
-import studio.chaosmos.intermission.Format
+package studio.chaosmos.intermission
 
 /**
  * LevelPlay's public demo app, from Unity's own demo (github.com/ironsource-mobile/Mediation-Demo-Apps,
@@ -10,7 +8,7 @@ import studio.chaosmos.intermission.Format
  * `withTestMode(false)`. So test mode sends every request to this app instead of the game's own, and a phone
  * under test never adds a view or a click to the game's ad account.
  */
-object DemoApp {
+internal object DemoApp {
     const val APP_KEY = "25b63cf85"
     const val INTERSTITIAL = "h3xw38h9214adgxo"
     const val REWARDED = "syz3d8ekts22q0or"

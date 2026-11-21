@@ -13,7 +13,7 @@ import kotlin.math.roundToInt
  * on the banner falls through to the game.
  */
 @SuppressLint("ViewConstructor")
-class BannerLayer(context: Context) : FrameLayout(context), BannerSurface {
+internal class BannerLayer(context: Context) : FrameLayout(context), BannerSurface {
     private val holder = FrameLayout(context)
     private val density = resources.displayMetrics.density
 
@@ -31,13 +31,11 @@ class BannerLayer(context: Context) : FrameLayout(context), BannerSurface {
         holder.addView(view, LayoutParams(width, height))
     }
 
-    override fun place(anchor: Anchor, xDp: Double, yDp: Double) {
-        val placement = BannerPlacement.of(anchor, xDp, yDp, density)
+    override fun place(anchor: Anchor, marginDp: Double) {
+        val placement = BannerPlacement.of(anchor, marginDp, density)
         val params = holder.layoutParams as LayoutParams
-        val vertical = if (placement.atBottom) Gravity.BOTTOM else Gravity.TOP
-        val horizontal = if (placement.centred) Gravity.CENTER_HORIZONTAL else Gravity.LEFT
-        params.gravity = vertical or horizontal
-        params.setMargins(placement.leftPx, placement.topPx, 0, placement.bottomPx)
+        params.gravity = (if (placement.atBottom) Gravity.BOTTOM else Gravity.TOP) or Gravity.CENTER_HORIZONTAL
+        params.setMargins(0, if (placement.atBottom) 0 else placement.marginPx, 0, if (placement.atBottom) placement.marginPx else 0)
         holder.layoutParams = params
     }
 

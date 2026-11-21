@@ -4,7 +4,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 
 /** Records every emission and checks it against the declared signal, as Godot's own check would. */
-class RecordingSink : SignalSink {
+internal class RecordingSink : SignalSink {
     val emitted = mutableListOf<Pair<String, List<Any>>>()
 
     override fun emit(name: String, vararg args: Any) {
@@ -18,11 +18,9 @@ class RecordingSink : SignalSink {
     }
 
     fun named(name: String) = emitted.filter { it.first == name }.map { it.second }
-
-    fun names() = emitted.map { it.first }
 }
 
-class FakeScheduler : Scheduler {
+internal class FakeScheduler : Scheduler {
     private class Task(val at: Long, val work: () -> Unit) {
         var cancelled = false
     }
@@ -50,12 +48,12 @@ class FakeScheduler : Scheduler {
     }
 }
 
-class FakeSurface : BannerSurface {
-    var placed: Triple<Anchor, Double, Double>? = null
+internal class FakeSurface : BannerSurface {
+    var placed: Pair<Anchor, Double>? = null
     var shown = false
 
-    override fun place(anchor: Anchor, xDp: Double, yDp: Double) {
-        placed = Triple(anchor, xDp, yDp)
+    override fun place(anchor: Anchor, marginDp: Double) {
+        placed = anchor to marginDp
     }
 
     override fun setVisible(visible: Boolean) {
@@ -64,11 +62,10 @@ class FakeSurface : BannerSurface {
 }
 
 /** Answers nothing by itself: a test plays the SDK's part by calling the controller's events. */
-class FakeProvider : Provider {
+internal class FakeProvider : Provider {
     val calls = mutableListOf<String>()
     val notReady = mutableSetOf<String>()
 
-    override val name = "fake"
     override val sdkVersion = "1.0"
 
     override fun attach(host: ProviderHost) = Unit
@@ -111,11 +108,10 @@ class FakeProvider : Provider {
         calls.add("destroy banner")
     }
 
-    override fun enableTestSuite() {
+    override fun openTestSuite(): Boolean {
         calls.add("test suite")
+        return true
     }
-
-    override fun openTestSuite() = true
 
     override fun release() {
         calls.add("release")

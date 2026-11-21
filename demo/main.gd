@@ -20,14 +20,13 @@ var _adaptive: CheckButton
 var _status: Label
 var _log: Label
 var _lines: PackedStringArray = []
-var _rewards: int = 0
 
 func _ready() -> void:
 	_ads = Intermission.new()
 	add_child(_ads)
 	_listen()
 	_build()
-	_say("available %s, provider \"%s\", sdk \"%s\"" % [_ads.available(), _ads.provider_name(), _ads.sdk_version()])
+	_say("available %s, sdk \"%s\"" % [_ads.available(), _ads.sdk_version()])
 
 func _build() -> void:
 	theme = Theme.new()
@@ -68,9 +67,8 @@ func _build() -> void:
 		["Show", func() -> void: _ads.show_ad(_rewarded.text, "demo")]])
 	_adaptive = _toggle(column, "Adaptive banner", false)
 	_row(column, [["Load banner", _load_banner], ["Destroy", _ads.destroy_banner]])
-	_row(column, [["Top", func() -> void: _ads.show_banner(Intermission.Anchor.TOP, Vector2(0, 24))],
-		["Bottom", func() -> void: _ads.show_banner(Intermission.Anchor.BOTTOM, Vector2(0, 48))],
-		["Custom", func() -> void: _ads.show_banner(Intermission.Anchor.CUSTOM, Vector2(16, 200))],
+	_row(column, [["Top", func() -> void: _ads.show_banner(Intermission.Anchor.TOP, 24.0)],
+		["Bottom", func() -> void: _ads.show_banner(Intermission.Anchor.BOTTOM, 48.0)],
 		["Hide", _ads.hide_banner]])
 	_row(column, [["Overlong after 20 s", func() -> void:
 		_ads.set_overlong_seconds(20.0)
@@ -115,7 +113,6 @@ func _row(parent: Control, buttons: Array) -> void:
 	parent.add_child(row)
 
 func _initialize() -> void:
-	_ads.enable_test_suite()
 	_ads.initialize(_app_key.text, _test_mode.button_pressed)
 	_say("initialize, test mode %s" % _test_mode.button_pressed)
 
@@ -140,9 +137,6 @@ func _listen() -> void:
 		_say("show failed %s %s %s %d %s" % [_format(format), unit, _error(error), code, message]))
 	_ads.ad_clicked.connect(func(format: Intermission.Format, unit: String) -> void:
 		_say("clicked %s %s" % [_format(format), unit]))
-	_ads.ad_rewarded.connect(func(unit: String, reward: String, amount: int) -> void:
-		_rewards += 1
-		_say("REWARDED %s %s x%d (rewards so far %d)" % [unit, reward, amount, _rewards]))
 	_ads.ad_closed.connect(func(format: Intermission.Format, unit: String, rewarded: bool) -> void:
 		_say("closed %s %s rewarded=%s" % [_format(format), unit, rewarded]))
 	_ads.app_left.connect(func(format: Intermission.Format, unit: String, clicked: bool) -> void:
@@ -153,9 +147,6 @@ func _listen() -> void:
 		_say("banner loaded %s %dx%d dp" % [unit, int(size_dp.x), int(size_dp.y)]))
 	_ads.banner_failed_to_load.connect(func(unit: String, error: Intermission.AdError, code: int, message: String) -> void:
 		_say("banner failed %s %s %d %s" % [unit, _error(error), code, message]))
-	_ads.banner_shown.connect(func(unit: String, network: String) -> void:
-		_say("banner shown %s from %s" % [unit, network]))
-	_ads.banner_clicked.connect(func(unit: String) -> void: _say("banner clicked %s" % unit))
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_PAUSED:
@@ -165,8 +156,8 @@ func _notification(what: int) -> void:
 
 func _refresh_status() -> void:
 	if _status != null:
-		_status.text = "Intermission %s | %s %s | test mode %s" % [
-			"ready" if _ads.is_initialized() else "not ready", _ads.provider_name(), _ads.sdk_version(), _ads.is_test_mode()]
+		_status.text = "Intermission %s | LevelPlay %s | test mode %s" % [
+			"ready" if _ads.is_initialized() else "not ready", _ads.sdk_version(), _ads.is_test_mode()]
 
 func _say(line: String) -> void:
 	print("INTERMISSION_DEMO ", line)

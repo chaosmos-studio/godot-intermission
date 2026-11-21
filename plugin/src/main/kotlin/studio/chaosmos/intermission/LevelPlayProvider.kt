@@ -1,5 +1,6 @@
-package studio.chaosmos.intermission.levelplay
+package studio.chaosmos.intermission
 
+import android.content.pm.ApplicationInfo
 import android.os.Handler
 import android.os.Looper
 import com.unity3d.mediation.LevelPlay
@@ -18,15 +19,9 @@ import com.unity3d.mediation.interstitial.LevelPlayInterstitialAdListener
 import com.unity3d.mediation.rewarded.LevelPlayReward
 import com.unity3d.mediation.rewarded.LevelPlayRewardedAd
 import com.unity3d.mediation.rewarded.LevelPlayRewardedAdListener
-import studio.chaosmos.intermission.AdError
-import studio.chaosmos.intermission.BannerSize
-import studio.chaosmos.intermission.Format
-import studio.chaosmos.intermission.Provider
-import studio.chaosmos.intermission.ProviderEvents
-import studio.chaosmos.intermission.ProviderHost
 
 /** Unity LevelPlay, with whichever networks the game's build adds (Unity Ads through its adapter, at first). */
-class LevelPlayProvider : Provider {
+internal class LevelPlayProvider : Provider {
     private val main = Handler(Looper.getMainLooper())
     private lateinit var host: ProviderHost
     private val interstitials = HashMap<String, LevelPlayInterstitialAd>()
@@ -38,8 +33,6 @@ class LevelPlayProvider : Provider {
 
     private val events: ProviderEvents
         get() = host.events
-
-    override val name = "levelplay"
 
     override val sdkVersion: String
         get() = LevelPlay.getSdkVersion()
@@ -61,10 +54,10 @@ class LevelPlayProvider : Provider {
             return
         }
         this.testMode = testMode
-        if (testMode) {
-            enableTestSuite()
-            LevelPlay.setAdaptersDebug(true)
-        }
+        // LevelPlay reads this only at init. Debug builds and test mode get the test suite, release builds never.
+        testSuite = testMode || (activity.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
+        if (testSuite) LevelPlay.setMetaData("is_test_suite", "enable")
+        if (testMode) LevelPlay.setAdaptersDebug(true)
         val request = LevelPlayInitRequest.Builder(if (testMode) DemoApp.APP_KEY else appKey).build()
         LevelPlay.init(activity, request, object : LevelPlayInitListener {
             override fun onInitSuccess(configuration: LevelPlayConfiguration) = onMain {
@@ -145,12 +138,6 @@ class LevelPlayProvider : Provider {
         view.destroy()
     }
 
-    // LevelPlay reads this metadata only at init.
-    override fun enableTestSuite() {
-        LevelPlay.setMetaData("is_test_suite", "enable")
-        testSuite = true
-    }
-
     override fun openTestSuite(): Boolean {
         val activity = host.activity()
         if (!testSuite || !initialized || activity == null) return false
@@ -207,9 +194,7 @@ class LevelPlayProvider : Provider {
             events.onShowFailed(format, adUnitId, error.mapped(), error.errorCode, error.errorMessage)
         }
 
-        override fun onAdRewarded(reward: LevelPlayReward, adInfo: LevelPlayAdInfo) = onMain {
-            events.onRewarded(adUnitId, reward.name, reward.amount)
-        }
+        override fun onAdRewarded(reward: LevelPlayReward, adInfo: LevelPlayAdInfo) = onMain { events.onRewarded(adUnitId) }
 
         override fun onAdClicked(adInfo: LevelPlayAdInfo) = onMain { events.onClicked(format, adUnitId) }
 
@@ -227,8 +212,6 @@ class LevelPlayProvider : Provider {
         override fun onAdLoadFailed(error: LevelPlayAdError) = onMain {
             events.onBannerLoadFailed(adUnitId, error.mapped(), error.errorCode, error.errorMessage)
         }
-
-        override fun onAdDisplayed(adInfo: LevelPlayAdInfo) = onMain { events.onBannerShown(adUnitId, adInfo.adNetwork) }
 
         override fun onAdClicked(adInfo: LevelPlayAdInfo) = onMain { events.onBannerClicked(adUnitId) }
 

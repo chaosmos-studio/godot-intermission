@@ -76,8 +76,7 @@ func _inert_without_the_plugin() -> void:
 	_check("a banner answers not available",
 		_last("banner_failed_to_load").slice(0, 2) == ["b1", Intermission.AdError.NOT_AVAILABLE])
 	_check("nothing is ready", not ads.is_ad_ready("r1") and not ads.is_initialized() and not ads.is_test_mode())
-	_check("no banner size", ads.banner_size_dp() == Vector2.ZERO)
-	_check("no provider", ads.provider_name() == "" and ads.sdk_version() == "")
+	_check("no SDK version", ads.sdk_version() == "")
 	ads.show_banner()
 	ads.hide_banner()
 	ads.destroy_banner()
@@ -97,24 +96,23 @@ func _calls_reach_the_plugin_by_wire_name() -> void:
 	ads.load_ad(Intermission.Format.REWARDED, "r1")
 	ads.show_ad("r1", "hint")
 	ads.load_banner("b1", Intermission.BannerSize.ADAPTIVE, "home")
-	ads.show_banner(Intermission.Anchor.CUSTOM, Vector2(16, 200.5))
+	ads.show_banner(Intermission.Anchor.TOP, 24.5)
+	ads.show_banner()
 	ads.hide_banner()
 	ads.destroy_banner()
 	ads.set_overlong_seconds(20.0)
-	ads.enable_test_suite()
 	ads.open_test_suite()
 	var calls: PackedStringArray = fake.get("calls")
 	var expected: PackedStringArray = [
 		"initialize key false", "setGdprConsent false", "setUsPrivacyOptOut true", "setChildDirected false",
 		"loadAd interstitial i1", "loadAd rewarded r1", "showAd r1 hint", "loadBanner b1 adaptive home",
-		"showBanner custom 16.0 200.5", "hideBanner", "destroyBanner", "setOverlongSeconds 20.0", "enableTestSuite",
+		"showBanner top 24.5", "showBanner bottom 0.0", "hideBanner", "destroyBanner", "setOverlongSeconds 20.0",
 		"openTestSuite",
 	]
 	_check("every call reaches the plugin with its wire names (%s)" % ", ".join(calls), calls == expected)
 	fake.set("ready_units", PackedStringArray(["r1"]))
 	_check("readiness is the plugin's", ads.is_ad_ready("r1") and not ads.is_ad_ready("i1"))
-	_check("banner size in dp", ads.banner_size_dp() == Vector2(320, 50))
-	_check("state queries pass through", ads.is_initialized() and ads.is_test_mode() and ads.provider_name() == "levelplay")
+	_check("state queries pass through", ads.is_initialized() and ads.is_test_mode() and ads.sdk_version() == "9.8.0")
 	ads.free()
 
 func _signals_arrive_as_enums() -> void:
@@ -135,8 +133,6 @@ func _signals_arrive_as_enums() -> void:
 		_last("ad_failed_to_show") == [Intermission.Format.REWARDED, "r1", Intermission.AdError.EXPIRED, 0, "gone"])
 	fake.emit_signal(&"ad_clicked", "rewarded", "r1")
 	_check("ad_clicked", _last("ad_clicked") == [Intermission.Format.REWARDED, "r1"])
-	fake.emit_signal(&"ad_rewarded", "r1", "hint", 3)
-	_check("ad_rewarded", _last("ad_rewarded") == ["r1", "hint", 3])
 	fake.emit_signal(&"ad_closed", "rewarded", "r1", true)
 	_check("ad_closed", _last("ad_closed") == [Intermission.Format.REWARDED, "r1", true])
 	fake.emit_signal(&"app_left", "interstitial", "i1", false)
@@ -148,10 +144,6 @@ func _signals_arrive_as_enums() -> void:
 	fake.emit_signal(&"banner_failed_to_load", "b1", "no_connection", 520, "offline")
 	_check("banner_failed_to_load",
 		_last("banner_failed_to_load") == ["b1", Intermission.AdError.NO_CONNECTION, 520, "offline"])
-	fake.emit_signal(&"banner_shown", "b1", "ironSource")
-	_check("banner_shown", _last("banner_shown") == ["b1", "ironSource"])
-	fake.emit_signal(&"banner_clicked", "b1")
-	_check("banner_clicked", _last("banner_clicked") == ["b1"])
 	ads.free()
 
 func _unknown_names_stay_visible() -> void:
@@ -177,7 +169,7 @@ func _wrapper_matches_the_kotlin_side() -> void:
 		fake_signals[String(info["name"])] = (info["args"] as Array).size()
 	var declared: Dictionary[String, String] = _matches(signals, "const val (\\w+) = \"(\\w+)\"")
 	var counts: Dictionary[String, String] = _matches(signals, "\\n\\s+(\\w+) to listOf\\(([^)]*)\\)")
-	_check("Kotlin declares signals", declared.size() >= 14)
+	_check("Kotlin declares signals", declared.size() >= 11)
 	var ads: Intermission = Intermission.new()
 	for constant: String in declared:
 		var name: String = declared[constant]
@@ -190,7 +182,9 @@ func _wrapper_matches_the_kotlin_side() -> void:
 
 	var methods: Dictionary[String, String] = _matches(plugin, "@UsedByGodot\\s+fun (\\w+)\\(")
 	var called: Dictionary[String, String] = _matches(wrapper, "_plugin\\.call\\(&\"(\\w+)\"")
-	_check("Kotlin exposes methods", methods.size() >= 18)
+	_check("Kotlin exposes methods", methods.size() >= 15)
+	for method: String in methods:
+		_check("the wrapper calls %s" % method, called.has(method))
 	for method: String in methods:
 		_check("the stand-in has %s" % method, FakePlugin.new().has_method(method))
 	for method: String in called:
@@ -202,9 +196,11 @@ func _wrapper_matches_the_kotlin_side() -> void:
 	var errors: PackedStringArray = _lower(Intermission.AdError.keys())
 	for error: String in _wire_names(types, "AdError"):
 		_check("the wrapper knows the error %s" % error, errors.has(error))
-	_check("the singleton's name", plugin.contains("const val NAME = \"%s\"" % Intermission.SINGLETON))
+	var constants: Dictionary = (Intermission as GDScript).get_script_constant_map()
+	var singleton: String = constants["_SINGLETON"]
+	_check("the singleton's name", plugin.contains("const val NAME = \"%s\"" % singleton))
 	_check("the manifest names the same plugin", _read(_repo_file("plugin/src/main/AndroidManifest.xml"))
-		.contains("org.godotengine.plugin.v2.%s" % Intermission.SINGLETON))
+		.contains("org.godotengine.plugin.v2.%s" % singleton))
 
 func _export_plugin_matches_the_version_catalog() -> void:
 	var catalog: String = _read(_repo_file("gradle/libs.versions.toml"))
@@ -212,7 +208,7 @@ func _export_plugin_matches_the_version_catalog() -> void:
 	var versions: Dictionary[String, String] = _matches(catalog, "\\n([\\w-]+) = \"([^\"]+)\"")
 	var modules: Dictionary[String, String] = _matches(catalog, "module = \"([^\"]+)\", version\\.ref = \"([\\w-]+)\"")
 	var dependencies: PackedStringArray = []
-	for coordinate: String in ExportPlugin.PROVIDERS["levelplay"]:
+	for coordinate: String in ExportPlugin.DEPENDENCIES:
 		dependencies.append(coordinate.trim_suffix("!!"))
 	var sdk_modules: int = 0
 	for module: String in modules:
@@ -223,7 +219,7 @@ func _export_plugin_matches_the_version_catalog() -> void:
 		_check("the export plugin asks for %s" % coordinate, dependencies.has(coordinate))
 	_check("and nothing else", dependencies.size() == sdk_modules)
 	var strict: PackedStringArray = []
-	for coordinate: String in ExportPlugin.PROVIDERS["levelplay"]:
+	for coordinate: String in ExportPlugin.DEPENDENCIES:
 		if coordinate.ends_with("!!"):
 			strict.append(coordinate.get_slice(":", 1))
 	_check("the two libraries Unity asks for by a range are held strictly",
@@ -231,11 +227,8 @@ func _export_plugin_matches_the_version_catalog() -> void:
 	var cfg: ConfigFile = ConfigFile.new()
 	cfg.load("res://addons/intermission/plugin.cfg")
 	_check("plugin.cfg carries the catalog's version", cfg.get_value("plugin", "version", "") == versions["intermission"])
-	_check("libraries for a debug build", ExportPlugin.libraries("levelplay", true) == PackedStringArray([
-		"intermission/bin/debug/intermission-debug.aar", "intermission/bin/debug/intermission-levelplay-debug.aar"]))
-	_check("libraries for a release build", ExportPlugin.libraries("levelplay", false)[1]
-		== "intermission/bin/release/intermission-levelplay-release.aar")
-	_check("LevelPlay is the default provider", ExportPlugin.provider() == "levelplay")
+	_check("the library for a debug build", ExportPlugin.library(true) == "intermission/bin/debug/intermission-debug.aar")
+	_check("and for a release build", ExportPlugin.library(false) == "intermission/bin/release/intermission-release.aar")
 
 func _repo_file(path: String) -> String:
 	return ProjectSettings.globalize_path("res://").path_join("..").path_join(path)

@@ -202,15 +202,12 @@ class AdControllerTest {
     fun aShownAdNamesItsNetwork() {
         ready()
         showing(Format.REWARDED, "r1")
-        ads.loadBanner("b1", "banner", "")
-        ads.onBannerShown("b1", "ironSource")
         assertEquals(listOf("rewarded", "r1", "UnityAds"), sink.named(Signals.AD_SHOWN).single())
-        assertEquals(listOf("b1", "ironSource"), sink.named(Signals.BANNER_SHOWN).single())
     }
 
     @Test
-    fun theTestSuiteIsTheProvidersToEnable() {
-        ads.enableTestSuite()
+    fun theTestSuiteIsTheProvidersToOpen() {
+        assertTrue(ads.openTestSuite())
         assertEquals(listOf("test suite"), provider.calls)
     }
 
@@ -226,11 +223,16 @@ class AdControllerTest {
     fun aRewardBeforeTheCloseClosesAtOnce() {
         ready()
         showing(Format.REWARDED, "r1")
-        ads.onRewarded("r1", "hint", 3)
+        ads.onRewarded("r1")
         ads.onClosed(Format.REWARDED, "r1")
-        assertEquals(listOf(Signals.AD_REWARDED, Signals.AD_CLOSED), sink.names().takeLast(2))
         assertEquals(listOf("rewarded", "r1", true), sink.named(Signals.AD_CLOSED).single())
-        assertEquals(listOf("r1", "hint", 3), sink.named(Signals.AD_REWARDED).single())
+    }
+
+    @Test
+    fun aRewardForNoAdOnScreenIsIgnored() {
+        ready()
+        ads.onRewarded("r1")
+        assertTrue(sink.emitted.none { it.first == Signals.AD_CLOSED })
     }
 
     @Test
@@ -240,7 +242,7 @@ class AdControllerTest {
         ads.onClosed(Format.REWARDED, "r1")
         assertTrue(sink.named(Signals.AD_CLOSED).isEmpty())
         clock.advance(AdController.REWARD_GRACE_MS / 2)
-        ads.onRewarded("r1", "hint", 3)
+        ads.onRewarded("r1")
         clock.advance(AdController.REWARD_GRACE_MS * 2)
         assertEquals(listOf(listOf("rewarded", "r1", true)), sink.named(Signals.AD_CLOSED))
     }
@@ -284,27 +286,37 @@ class AdControllerTest {
     }
 
     @Test
-    fun anAdUpTooLongIsReportedOnce() {
+    fun theOverlongCheckIsOffUntilAsked() {
         ready()
         showing(Format.INTERSTITIAL, "i1")
-        clock.advance(AdController.DEFAULT_OVERLONG_MS - 1)
+        clock.advance(3_600_000)
         assertTrue(sink.named(Signals.AD_OVERLONG).isEmpty())
-        clock.advance(AdController.DEFAULT_OVERLONG_MS * 3)
+    }
+
+    @Test
+    fun anAdUpTooLongIsReportedOnce() {
+        ready()
+        ads.setOverlongSeconds(60.0)
+        showing(Format.INTERSTITIAL, "i1")
+        clock.advance(59_999)
+        assertTrue(sink.named(Signals.AD_OVERLONG).isEmpty())
+        clock.advance(180_000)
         assertEquals(listOf(listOf("interstitial", "i1", 60.0)), sink.named(Signals.AD_OVERLONG))
     }
 
     @Test
     fun anAdClosedInTimeIsNotOverlong() {
         ready()
+        ads.setOverlongSeconds(60.0)
         showing(Format.INTERSTITIAL, "i1")
         clock.advance(10_000)
         ads.onClosed(Format.INTERSTITIAL, "i1")
-        clock.advance(AdController.DEFAULT_OVERLONG_MS * 2)
+        clock.advance(120_000)
         assertTrue(sink.named(Signals.AD_OVERLONG).isEmpty())
     }
 
     @Test
-    fun theOverlongLimitCanChangeOrBeOff() {
+    fun theOverlongCheckCanBeTurnedOffAgain() {
         ready()
         ads.setOverlongSeconds(20.0)
         showing(Format.INTERSTITIAL, "i1")
@@ -340,15 +352,14 @@ class AdControllerTest {
         ads.loadBanner("b1", "banner", "")
         ads.onBannerLoaded("b1", 320, 50)
         assertEquals(listOf("b1", 320, 50), sink.named(Signals.BANNER_LOADED).single())
-        assertEquals(320 to 50, ads.bannerWidthDp to ads.bannerHeightDp)
     }
 
     @Test
     fun showingAndHidingTheBannerMovesTheLayerAndPausesRefresh() {
         ready()
         ads.loadBanner("b1", "banner", "")
-        ads.showBanner("bottom", 0.0, 72.0)
-        assertEquals(Triple(Anchor.BOTTOM, 0.0, 72.0), surface.placed)
+        ads.showBanner("bottom", 72.0)
+        assertEquals(Anchor.BOTTOM to 72.0, surface.placed)
         assertTrue(surface.shown)
         ads.hideBanner()
         assertFalse(surface.shown)
@@ -358,7 +369,7 @@ class AdControllerTest {
     @Test
     fun anUnknownAnchorChangesNothing() {
         ready()
-        ads.showBanner("middle", 0.0, 0.0)
+        ads.showBanner("custom", 0.0)
         assertEquals(null, surface.placed)
         assertFalse(surface.shown)
     }
@@ -376,14 +387,14 @@ class AdControllerTest {
     }
 
     @Test
-    fun destroyingTheBannerForgetsItsSize() {
+    fun aDestroyedBannerIgnoresLateEvents() {
         ready()
         ads.loadBanner("b1", "banner", "")
         ads.onBannerLoaded("b1", 320, 50)
         ads.destroyBanner()
-        assertEquals(0 to 0, ads.bannerWidthDp to ads.bannerHeightDp)
         ads.onBannerLoaded("b1", 320, 50)
         assertEquals(1, sink.named(Signals.BANNER_LOADED).size)
+        assertTrue(provider.calls.contains("destroy banner"))
     }
 
     @Test
@@ -411,9 +422,10 @@ class AdControllerTest {
     @Test
     fun releaseStopsEveryTimer() {
         ready()
+        ads.setOverlongSeconds(60.0)
         showing(Format.INTERSTITIAL, "i1")
         ads.release()
-        clock.advance(AdController.DEFAULT_OVERLONG_MS * 2)
+        clock.advance(120_000)
         assertTrue(sink.named(Signals.AD_OVERLONG).isEmpty())
         assertEquals("release", provider.calls.last())
     }
