@@ -7,7 +7,7 @@ extends Node
 ## once, and every answer comes back as a signal on Godot's thread.
 ## [br][br]
 ## Off Android, or in a build without the plugin, [method available] is false and every request answers with
-## [constant NOT_AVAILABLE] on the next frame, just as a network with no ads would, so a game needs no second path.
+## [constant AdError.NOT_AVAILABLE] on the next frame, just as a network with no ads would, so a game needs no second path.
 
 enum Format { INTERSTITIAL, REWARDED, BANNER }
 enum BannerSize { BANNER, LARGE, MEDIUM_RECTANGLE, LEADERBOARD, ADAPTIVE }
@@ -34,7 +34,7 @@ enum AdError {
 ## The format a signal carries for an ad unit that was never loaded.
 const UNKNOWN_FORMAT: int = -1
 
-## [param error] is [constant NONE] when [param ok].
+## [param error] is [constant AdError.NONE] when [param ok].
 signal initialized(ok: bool, error: AdError, provider_code: int, message: String)
 signal ad_loaded(format: Format, ad_unit_id: String)
 signal ad_failed_to_load(format: Format, ad_unit_id: String, error: AdError, provider_code: int, message: String)

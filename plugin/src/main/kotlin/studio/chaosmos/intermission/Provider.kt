@@ -4,7 +4,7 @@ import android.app.Activity
 import android.view.View
 
 /**
- * The ad SDK behind the plugin, LevelPlay today, kept behind this seam so the controller is tested against a fake.
+ * The ad SDK behind the plugin, LevelPlay, kept behind this seam so the controller is tested against a fake.
  * Every call arrives on the Android main thread, and every event must be reported on it.
  */
 internal interface Provider {

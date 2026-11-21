@@ -20,7 +20,7 @@ import com.unity3d.mediation.rewarded.LevelPlayReward
 import com.unity3d.mediation.rewarded.LevelPlayRewardedAd
 import com.unity3d.mediation.rewarded.LevelPlayRewardedAdListener
 
-/** Unity LevelPlay, with whichever networks the game's build adds (Unity Ads through its adapter, at first). */
+/** Unity LevelPlay, with the networks the game's build adds: Unity Ads, through its adapter. */
 internal class LevelPlayProvider : Provider {
     private val main = Handler(Looper.getMainLooper())
     private lateinit var host: ProviderHost
@@ -54,7 +54,7 @@ internal class LevelPlayProvider : Provider {
             return
         }
         this.testMode = testMode
-        // LevelPlay reads this only at init. Debug builds and test mode get the test suite, release builds never.
+        // LevelPlay reads this only at init, so debug builds and test mode always get it, whether or not they open it.
         testSuite = testMode || (activity.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
         if (testSuite) LevelPlay.setMetaData("is_test_suite", "enable")
         if (testMode) LevelPlay.setAdaptersDebug(true)
