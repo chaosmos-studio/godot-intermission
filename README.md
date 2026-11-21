@@ -52,8 +52,7 @@ So with `initialize(app_key, true)` every ad comes from LevelPlay's public demo 
 Signals still carry your own ad unit ids.
 
 - `open_test_suite()` opens LevelPlay's integration test suite, in debug builds and in test mode, once initialized.
-- To see your own app's ads, register the phone as a test device in the LevelPlay and Unity dashboards and initialize with test mode off.
-- Never tap a live ad on your own phone.
+- Your own app key may serve live ads even on a phone registered as a test device in the LevelPlay and Unity dashboards. Check your own ad units with loads only, and never show or tap one of their ads on your own phone.
 
 ## Consent
 
