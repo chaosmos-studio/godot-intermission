@@ -1,7 +1,7 @@
 # Intermission
 
-An Android plugin for Godot 4.7 that shows ads from Unity LevelPlay, with Unity Ads as its network.
-Interstitial, rewarded and banner ads, consent setters, a test mode that never touches your own ad account, and two signals for bad ads.
+Ads from Unity LevelPlay, with Unity Ads as the network, for Godot 4.7 games on Android.
+Interstitial, rewarded and banner ads through one node and its typed signals.
 
 **Pre-release.** The API may still change before 0.1.0.
 
@@ -9,56 +9,71 @@ Interstitial, rewarded and banner ads, consent setters, a test mode that never t
 
 1. Download `intermission-<version>.zip` from the [releases](https://github.com/chaosmos-studio/godot-intermission/releases) and unzip it into your project, so you have `addons/intermission/`.
 2. Enable Intermission under Project Settings, Plugins.
-3. In your Android export preset, turn on Use Gradle Build (Project, Install Android Build Template, first).
+3. Install the Android build template (Project, Install Android Build Template) and turn on Use Gradle Build in your Android export preset.
 
-The export adds the plugin and Unity's SDK (fetched by Gradle from Maven Central, versions pinned) to the build.
+The export adds the plugin and Unity's SDKs to the build, every version pinned, and Gradle fetches the SDKs from Maven Central.
 
 ## Use
 
 ```gdscript
+const REWARDED := "YOUR_REWARDED_AD_UNIT_ID"
 var ads := Intermission.new()
 
 func _ready() -> void:
 	add_child(ads)
-	ads.initialized.connect(_on_initialized)
 	ads.ad_closed.connect(_on_ad_closed)
-	ads.set_gdpr_consent(false)
 	ads.initialize("YOUR_APP_KEY", OS.is_debug_build())
+	ads.load_ad(Intermission.Format.REWARDED, REWARDED)
 
-func _on_initialized(ok: bool, _error: Intermission.AdError, _code: int, _message: String) -> void:
-	if ok:
-		ads.load_ad(Intermission.Format.REWARDED, "YOUR_REWARDED_AD_UNIT")
+func offer_hint() -> void:
+	if ads.is_ad_ready(REWARDED):
+		ads.show_ad(REWARDED, "hint")
 
-func show_video() -> void:
-	if ads.is_ad_ready("YOUR_REWARDED_AD_UNIT"):
-		ads.show_ad("YOUR_REWARDED_AD_UNIT", "hint")
-
-func _on_ad_closed(format: Intermission.Format, _ad_unit_id: String, rewarded: bool) -> void:
-	if format == Intermission.Format.REWARDED and rewarded:
+func _on_ad_closed(_format: Intermission.Format, ad_unit_id: String, rewarded: bool) -> void:
+	if ad_unit_id == REWARDED and rewarded:
 		give_hint()
+	ads.load_ad(Intermission.Format.REWARDED, REWARDED)
 ```
 
 Every call returns at once and every answer comes back as a signal.
+Loads asked for before the SDK is ready wait for it.
 Off Android every request fails with `NOT_AVAILABLE` on the next frame, so the same code runs everywhere.
+
+Interstitials work the same way with `Format.INTERSTITIAL`.
+A banner loads with `load_banner(ad_unit_id, size)` and stays hidden until `show_banner(anchor, margin_dp)`, centred at the top or the bottom of the screen.
+The sizes are `BANNER` (320x50), `LARGE` (320x90), `MEDIUM_RECTANGLE` (300x250), `LEADERBOARD` (728x90) and `ADAPTIVE` (the screen's width, with a height the SDK picks).
+
 The class reference is in `addons/intermission/intermission.gd`, and `demo/` tries every call on a phone.
 
 ## Test mode
 
 LevelPlay has no switch for test ads in code.
-So in test mode the plugin asks LevelPlay's public demo app for every ad, and your own app and its fraud checks never see your test devices.
+So with `initialize(app_key, true)` every ad comes from LevelPlay's public demo app, and your own app and its fraud checks never see your test devices.
 Signals still carry your own ad unit ids.
-Never tap a live ad on your own phone.
 
-## Bad ads
+- `open_test_suite()` opens LevelPlay's integration test suite, in debug builds and in test mode, once initialized.
+- To see your own app's ads, register the phone as a test device in the LevelPlay and Unity dashboards and initialize with test mode off.
+- Never tap a live ad on your own phone.
 
-- `app_left(format, ad_unit_id, clicked)` fires when something outside the app (a store page, another app, the home screen) covers a full-screen ad. With `clicked` false, the ad sent the player away by itself, or the player left.
-- `ad_shown` and `banner_shown` name the network that filled the ad.
-- `ad_overlong(format, ad_unit_id, seconds)` fires when a full-screen ad stays up longer than `set_overlong_seconds` (60 by default).
+## Consent
+
+Intermission shows no consent form.
+Ask in your own screen, or with a consent platform, and pass the answer on before `initialize`, and again whenever the player changes it.
+
+- `set_gdpr_consent(granted)`: consent for personalised ads where the GDPR applies (the EEA, the UK, Switzerland).
+- `set_us_privacy_opt_out(opted_out)`: a US player's choice not to have their data sold or shared.
+- `set_child_directed(child)`: for apps directed at children.
+
+## Ads that misbehave
+
+- `app_left(format, ad_unit_id, clicked)`: something outside the app (a store page, another app, the home screen) covered a full-screen ad. With `clicked` false, nobody tapped the ad first.
+- `ad_overlong(format, ad_unit_id, seconds)`: a full-screen ad is still up after `set_overlong_seconds(seconds)`. Off until you set it.
+- `ad_shown(format, ad_unit_id, network)` names the network that filled the ad.
 
 ## Build
 
 ```bash
-./gradlew :plugin:testDebugUnitTest :levelplay:testDebugUnitTest addonZip
+./gradlew :plugin:testDebugUnitTest addonZip
 godot --headless --path demo --import
 godot --headless --path demo -s res://tests/run_tests.gd
 ```
