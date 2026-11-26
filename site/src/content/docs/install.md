@@ -62,6 +62,6 @@ The last two are for Android's Privacy Sandbox, and your own manifest may remove
 
 - Declare in Google Play Console that the app contains ads, that it uses the advertising ID, and what the SDKs collect, in Data safety.
 - Publish the `app-ads.txt` lines LevelPlay gives you on your developer website.
-- Ask for consent where the law requires it, and pass the answer on. See [Consent](/intermission/guides/consent/).
+- Ask for consent where the law requires it, and pass the answer on. See [Consent](/tools/intermission/guides/consent/).
 
-Next: the [Quick start](/intermission/quick-start/).
+Next: the [Quick start](/tools/intermission/quick-start/).

@@ -5,7 +5,7 @@ description: Every method of the Intermission class.
 
 `Intermission` extends `Node`.
 Every method returns at once.
-Answers arrive as [signals](/intermission/reference/signals/).
+Answers arrive as [signals](/tools/intermission/reference/signals/).
 
 ## Set up
 
@@ -27,7 +27,7 @@ func initialize(app_key: String, test_mode: bool = false) -> void
 
 Starts LevelPlay with your app key.
 Answers with `initialized`.
-In test mode every ad comes from LevelPlay's demo app, and `app_key` may be empty. See [Test mode](/intermission/guides/test-mode/).
+In test mode every ad comes from LevelPlay's demo app, and `app_key` may be empty. See [Test mode](/tools/intermission/guides/test-mode/).
 Calling it again after it succeeded answers `initialized(true)` again, and after a failure it tries again.
 
 ### is_initialized
@@ -56,7 +56,7 @@ LevelPlay's version, such as `"9.8.0"`, or empty when `available()` is false.
 
 ## Privacy
 
-Call these before `initialize`, and again whenever the player changes their choice. See [Consent](/intermission/guides/consent/).
+Call these before `initialize`, and again whenever the player changes their choice. See [Consent](/tools/intermission/guides/consent/).
 
 ### set_gdpr_consent
 
@@ -84,7 +84,7 @@ For apps, or players, directed at children.
 
 ## Full-screen ads
 
-See [Full-screen ads](/intermission/guides/full-screen-ads/).
+See [Full-screen ads](/tools/intermission/guides/full-screen-ads/).
 
 ### load_ad
 
@@ -116,7 +116,7 @@ Answers with `ad_shown` or `ad_failed_to_show`, then `ad_closed`.
 
 ## Banners
 
-See [Banners](/intermission/guides/banners/).
+See [Banners](/tools/intermission/guides/banners/).
 
 ### load_banner
 
@@ -161,7 +161,7 @@ func set_overlong_seconds(seconds: float) -> void
 ```
 
 Turns on `ad_overlong` for full-screen ads still up after `seconds`.
-Off (0) by default. See [Misbehaving ads](/intermission/guides/misbehaving-ads/).
+Off (0) by default. See [Misbehaving ads](/tools/intermission/guides/misbehaving-ads/).
 
 ### open_test_suite
 
@@ -170,4 +170,4 @@ func open_test_suite() -> void
 ```
 
 Opens LevelPlay's Integration Test Suite, in a debug build or in test mode, once initialized.
-Elsewhere it does nothing. See [Test mode](/intermission/guides/test-mode/).
+Elsewhere it does nothing. See [Test mode](/tools/intermission/guides/test-mode/).

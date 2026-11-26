@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "The documentation site for Intermission, served at chaosmos.studio/intermission/.",
+  "description": "The documentation site for Intermission, served at chaosmos.studio/tools/intermission/.",
   "scripts": {
     "dev": "astro dev",
     "build": "astro check && astro build",

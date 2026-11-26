@@ -14,7 +14,7 @@ With your own app key, check these in order:
 3. **Each format is covered.** A banner ad unit needs its own banner instance. An interstitial filling does not mean the banner will.
 4. **There is demand.** A brand-new app, a country with little demand, or strict ad controls can leave requests unfilled. That is normal, and your game should carry on without the ad.
 
-Never check fill by showing your own app's ads on your own phone. Loads are enough to see whether a unit fills. See [Test mode](/intermission/guides/test-mode/).
+Never check fill by showing your own app's ads on your own phone. Loads are enough to see whether a unit fills. See [Test mode](/tools/intermission/guides/test-mode/).
 
 ## Live ads appear on a registered test phone
 
@@ -23,7 +23,7 @@ LevelPlay sends a network's test ads to a device only when that network, with it
 Until then, your own app key serves the phone live ads.
 
 If it happens, close the ad with its own close button, never tap anything else in it, and switch back to test mode.
-The full story and Unity's guides are on [Test mode](/intermission/guides/test-mode/).
+The full story and Unity's guides are on [Test mode](/tools/intermission/guides/test-mode/).
 
 ## An ad opens Google Play by itself
 
@@ -31,7 +31,7 @@ Some Unity Ads creatives open Google Play's install page on their own, with no t
 Play's page appears over the ad, and `app_left` arrives with `clicked` false.
 No setting in LevelPlay or Unity Ads stops it.
 Close Play's page with Back and the ad is still there behind it, with its own close button.
-See [Misbehaving ads](/intermission/guides/misbehaving-ads/) for what a game can do about these ads.
+See [Misbehaving ads](/tools/intermission/guides/misbehaving-ads/) for what a game can do about these ads.
 
 ## An ad has no close button
 
@@ -60,4 +60,4 @@ LevelPlay's suite supports portrait orientation only.
 
 - **Use Gradle Build** must be on in the Android export preset, and the Android build template installed.
 - The first build downloads Unity's SDKs from Maven Central, so it needs a connection.
-- If another plugin brings different versions of the same Google or Unity libraries, Gradle reports a conflict. Intermission's pins are listed on [Install](/intermission/install/).
+- If another plugin brings different versions of the same Google or Unity libraries, Gradle reports a conflict. Intermission's pins are listed on [Install](/tools/intermission/install/).

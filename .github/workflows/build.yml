@@ -83,7 +83,7 @@ jobs:
             echo "CHANGELOG.md has no section for $version" >&2
             exit 1
           fi
-          printf '\nInstall, update and check the download: https://chaosmos.studio/intermission/install/\n' >> notes.md
+          printf '\nInstall, update and check the download: https://chaosmos.studio/tools/intermission/install/\n' >> notes.md
           zip="intermission-${TAG#v}.zip"
           mkdir out
           cp "$(find dist -name "intermission-$version.zip")" "out/$zip"

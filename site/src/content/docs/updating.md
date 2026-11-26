@@ -8,11 +8,11 @@ A game keeps the version it was built with until its developer installs a new on
 
 ## Getting a new version
 
-1. Read the release's notes on [GitHub Releases](https://github.com/chaosmos-studio/godot-intermission/releases) or in the [Changelog](/intermission/changelog/).
+1. Read the release's notes on [GitHub Releases](https://github.com/chaosmos-studio/godot-intermission/releases) or in the [Changelog](/tools/intermission/changelog/).
 2. Close the project in Godot.
 3. Delete `addons/intermission/`.
-4. Download the new `intermission-<version>.zip`, check it against `SHA256SUMS.txt`, and unzip it in your project's folder, as on [Install](/intermission/install/).
-5. Open the project, export, and test in [test mode](/intermission/guides/test-mode/) before you ship.
+4. Download the new `intermission-<version>.zip`, check it against `SHA256SUMS.txt`, and unzip it in your project's folder, as on [Install](/tools/intermission/install/).
+5. Open the project, export, and test in [test mode](/tools/intermission/guides/test-mode/) before you ship.
 
 Deleting the old folder first matters: files a release removed would otherwise stay behind.
 
