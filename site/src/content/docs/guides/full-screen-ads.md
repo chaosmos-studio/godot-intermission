@@ -57,7 +57,7 @@ The reward name and amount set in LevelPlay's dashboard are not passed on.
 ## Taps
 
 `ad_clicked(format, ad_unit_id)` arrives when the player taps the ad.
-Never tap your own live ads. See [Test mode](/intermission/guides/test-mode/).
+Never tap your own live ads. See [Test mode](/tools/intermission/guides/test-mode/).
 
 ## Good manners
 
@@ -67,4 +67,4 @@ Some rules of thumb that keep them bearable:
 - Never on the first launch, and never in the middle of play.
 - Only at a natural break, such as after a level is won.
 - A few minutes apart, and none right after a purchase or a rewarded video.
-- Back off for a day after one [misbehaves](/intermission/guides/misbehaving-ads/).
+- Back off for a day after one [misbehaves](/tools/intermission/guides/misbehaving-ads/).

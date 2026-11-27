@@ -42,10 +42,10 @@ jobs:
       - run: npm run build
         working-directory: site
 
-      - name: Publish to chaosmos.studio/intermission/
+      - name: Publish to chaosmos.studio/tools/intermission/
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         uses: chaosmos-studio/.github/actions/deploy-web@a204d0b945063da0d885c1caecd410a5783dcf7b # main
         with:
           worker: intermission-docs
-          paths: intermission=site/dist
+          paths: tools/intermission=site/dist
           cloudflare-api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}

@@ -31,7 +31,7 @@ func _on_ad_closed(_format: Intermission.Format, ad_unit_id: String, rewarded: b
 
 What it does:
 
-- `initialize(app_key, test_mode)` starts LevelPlay. Here debug builds use [test mode](/intermission/guides/test-mode/), so they only ever get test ads, and release builds use your own app.
+- `initialize(app_key, test_mode)` starts LevelPlay. Here debug builds use [test mode](/tools/intermission/guides/test-mode/), so they only ever get test ads, and release builds use your own app.
 - `load_ad` asks for one ad for the ad unit. A load asked for before the SDK is ready waits for it.
 - `is_ad_ready` answers at once, so a button can show or hide on it.
 - `show_ad` shows the loaded ad. The second argument is an optional placement name for LevelPlay's reports.
@@ -51,6 +51,6 @@ Every request then fails on the next frame with `AdError.NOT_AVAILABLE`, the way
 
 ## Next
 
-- [Full-screen ads](/intermission/guides/full-screen-ads/) for interstitials and the details of loading and showing.
-- [Banners](/intermission/guides/banners/).
-- [Consent](/intermission/guides/consent/) before you ship.
+- [Full-screen ads](/tools/intermission/guides/full-screen-ads/) for interstitials and the details of loading and showing.
+- [Banners](/tools/intermission/guides/banners/).
+- [Consent](/tools/intermission/guides/consent/) before you ship.

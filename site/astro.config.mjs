@@ -3,7 +3,7 @@ import starlight from "@astrojs/starlight";
 
 export default defineConfig({
   site: "https://chaosmos.studio",
-  base: "/intermission",
+  base: "/tools/intermission",
   trailingSlash: "always",
   build: { format: "directory" },
   integrations: [
@@ -13,7 +13,7 @@ export default defineConfig({
       logo: { light: "./src/assets/mark-light.svg", dark: "./src/assets/mark-dark.svg", alt: "" },
       favicon: "/favicon.svg",
       head: [
-        { tag: "meta", attrs: { property: "og:image", content: "https://chaosmos.studio/intermission/card.png" } },
+        { tag: "meta", attrs: { property: "og:image", content: "https://chaosmos.studio/tools/intermission/card.png" } },
         { tag: "meta", attrs: { property: "og:image:alt", content: "Intermission: Unity LevelPlay ads for Godot 4.7 on Android" } },
         { tag: "meta", attrs: { name: "twitter:card", content: "summary_large_image" } },
       ],

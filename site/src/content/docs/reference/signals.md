@@ -6,7 +6,7 @@ description: Every signal of the Intermission class, with its arguments.
 Signals arrive on the thread your scripts run on.
 While a full-screen ad covers the game, Godot is paused, and the signals wait in order until it resumes.
 
-Where a signal carries an error, `error` is an [`AdError`](/intermission/reference/enums/#aderror), and `provider_code` and `message` are LevelPlay's own code and text, or `0` and the plugin's own text when the plugin found the problem itself.
+Where a signal carries an error, `error` is an [`AdError`](/tools/intermission/reference/enums/#aderror), and `provider_code` and `message` are LevelPlay's own code and text, or `0` and the plugin's own text when the plugin found the problem itself.
 
 ## Start
 
@@ -90,7 +90,7 @@ The banner, or one of its refreshes, failed to load.
 
 ## Ads that misbehave
 
-See [Misbehaving ads](/intermission/guides/misbehaving-ads/).
+See [Misbehaving ads](/tools/intermission/guides/misbehaving-ads/).
 
 ### app_left
 

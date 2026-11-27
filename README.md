@@ -3,7 +3,7 @@
 Ads from Unity LevelPlay, with Unity Ads as the network, for Godot 4.7 games on Android.
 Interstitial, rewarded and banner ads through one node and its typed signals.
 
-**Documentation: [chaosmos.studio/intermission](https://chaosmos.studio/intermission/)**
+**Documentation: [chaosmos.studio/tools/intermission](https://chaosmos.studio/tools/intermission/)**
 
 ## Install
 
